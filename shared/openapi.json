@@ -3,7 +3,7 @@
   "info": {
     "title": "TravelTrace API",
     "description": "Your journey, reconstructed. TravelTrace turns photos into a map-first travel memory: upload photos, extract GPS and time, and build a timeline.",
-    "version": "0.1.1"
+    "version": "0.2.0"
   },
   "paths": {
     "/api/v1/auth/bootstrap": {

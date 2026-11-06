@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     # --- Identity ---------------------------------------------------------
     app_name: str = "TravelTrace"
-    app_version: str = "0.1.1"
+    app_version: str = "0.2.0"
     environment: Literal["development", "test", "production"] = "development"
     api_v1_prefix: str = "/api/v1"
 
@@ -38,7 +38,8 @@ class Settings(BaseSettings):
     allow_registration: bool = True
     cors_origins: str = (
         "http://localhost:5173,http://127.0.0.1:5173,"
-        "http://localhost:4173,http://127.0.0.1:4173,http://localhost:8080"
+        "http://localhost:4173,http://127.0.0.1:4173,http://localhost:8080,"
+        "http://localhost,https://localhost,capacitor://localhost"
     )
 
     # --- Database ---------------------------------------------------------

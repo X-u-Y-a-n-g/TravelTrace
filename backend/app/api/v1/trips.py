@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from starlette.background import BackgroundTask
 
-from app.api.deps import Pagination, get_current_user, pagination
+from app.api.deps import Pagination, get_current_user, get_media_user, pagination
 from app.db.session import get_db
 from app.models import User
 from app.schemas.common import Page
@@ -104,7 +104,7 @@ def restore_trip(
 def export_trip(
     trip_id: UUID,
     include_originals: bool = Query(default=True),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_media_user),
     db: Session = Depends(get_db),
 ) -> FileResponse:
     archive = export_service.build_export(db, trip_id, user.id, include_originals=include_originals)

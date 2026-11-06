@@ -9,6 +9,7 @@ import {
   LogOut,
   MapPinned,
   ShieldCheck,
+  Smartphone,
   Sparkles,
   UserRound,
 } from "lucide-react";
@@ -17,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Avatar } from "@/components/common/avatar";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -28,6 +30,12 @@ import { Select } from "@/components/ui/select";
 import { useI18n } from "@/i18n";
 import { api, tripExportUrl } from "@/lib/api";
 import { formatBytes } from "@/lib/format";
+import {
+  clearStoredApiBase,
+  getStoredApiBase,
+  isNativeApp,
+  serverLabel,
+} from "@/lib/mobile";
 import { useInstanceSettings, useTrips } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
@@ -46,6 +54,8 @@ export function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [exportTripId, setExportTripId] = useState("");
+  const [changeServerOpen, setChangeServerOpen] = useState(false);
+  const nativeBase = isNativeApp() ? getStoredApiBase() : null;
 
   useEffect(() => {
     setDisplayName(user?.display_name ?? user?.username ?? "");
@@ -163,6 +173,38 @@ export function SettingsPage() {
               <LanguageSwitcher variant="full" />
             </CardContent>
           </Card>
+
+          {nativeBase && (
+            <Card>
+              <CardHeader className="flex-row items-center gap-3 space-y-0">
+                <span className="flex size-10 items-center justify-center rounded-xl bg-pine-100 text-pine-700">
+                  <Smartphone className="size-4" />
+                </span>
+                <div>
+                  <CardTitle>{t("mobile.serverTitle")}</CardTitle>
+                  <CardDescription>{t("mobile.serverDescription")}</CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="rounded-2xl bg-secondary/50 p-3.5">
+                  <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                    {t("mobile.currentServer")}
+                  </p>
+                  <p className="mt-1 break-all text-sm font-medium">{serverLabel(nativeBase)}</p>
+                </div>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  {t("mobile.changeServerHint")}
+                </p>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setChangeServerOpen(true)}
+                >
+                  {t("mobile.changeServer")}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader className="flex-row items-center gap-3 space-y-0">
@@ -389,6 +431,21 @@ export function SettingsPage() {
           </Card>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={changeServerOpen}
+        onOpenChange={setChangeServerOpen}
+        title={t("mobile.changeServerConfirmTitle")}
+        description={t("mobile.changeServerConfirmDescription")}
+        confirmLabel={t("mobile.changeServerConfirm")}
+        cancelLabel={t("common.cancel")}
+        onConfirm={() => {
+          clearStoredApiBase();
+          clear();
+          queryClient.clear();
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }

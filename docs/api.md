@@ -326,7 +326,7 @@ Use `include_originals=false` for a metadata-only archive.
   offset.
 - Send dates for filters as `YYYY-MM-DD`.
 
-## Not implemented in v0.1.1
+## Not implemented in v0.2.0
 
 - GPX/GeoJSON/KML track import, track-to-photo matching.
 - Journals and memory-book generation.

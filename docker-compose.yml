@@ -12,7 +12,7 @@ x-backend-environment: &backend-environment
   TRAVELTRACE_ALLOW_REGISTRATION: ${TRAVELTRACE_ALLOW_REGISTRATION:-true}
   TRAVELTRACE_GEOCODING_PROVIDER: ${TRAVELTRACE_GEOCODING_PROVIDER:-none}
   TRAVELTRACE_EXIFTOOL_ENABLED: "true"
-  TRAVELTRACE_CORS_ORIGINS: ${TRAVELTRACE_CORS_ORIGINS:-http://localhost:8080}
+  TRAVELTRACE_CORS_ORIGINS: ${TRAVELTRACE_CORS_ORIGINS:-http://localhost:8080,http://localhost,https://localhost,capacitor://localhost}
 
 services:
   db:

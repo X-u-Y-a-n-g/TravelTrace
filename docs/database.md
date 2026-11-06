@@ -26,7 +26,7 @@ erDiagram
 ```
 
 The `track`, `track_point`, `journal` and `memory_book` tables are part of the forward-looking schema.
-Their APIs arrive in v0.2/v0.3; the v0.1.1 interface does not expose them yet.
+Their APIs arrive in v0.2/v0.3; the v0.2.0 interface does not expose them yet.
 
 ## Tables
 
@@ -64,7 +64,7 @@ Constraints/indexes: `CHECK` on date ordering, `(user_id, start_date)`, `deleted
 
 ### `trip_members`
 
-Prepared for collaboration. v0.1.1 creates one `owner` row per trip; authorization still checks the
+Prepared for collaboration. v0.2.0 creates one `owner` row per trip; authorization still checks the
 trip owner only.
 
 | Column | Type | Notes |
@@ -177,7 +177,7 @@ timezone-aware UTC values.
 - Trips and photos have `deleted_at`. Visibility queries exclude deleted rows and photos belonging to
   deleted trips.
 - Deleting a photo also removes its event links and clears covers referencing it; files stay on disk
-  for recovery in v0.1.1.
+  for recovery in v0.2.0.
 - Re-uploading the exact same bytes restores a soft-deleted photo instead of creating a duplicate.
 - Deleting a trip archives its timeline; the photos stay in the library but are hidden from map and
   gallery because their trip is archived. Restoring the trip brings them back.

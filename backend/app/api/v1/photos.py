@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, Response, UploadFile,
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-from app.api.deps import Pagination, get_current_user, pagination
+from app.api.deps import Pagination, get_current_user, get_media_user, pagination
 from app.db.session import get_db
 from app.models import User
 from app.repositories import PhotoRepository
@@ -130,7 +130,7 @@ def delete_photo(
 def photo_file(
     photo_id: UUID,
     size: Literal["thumb", "preview", "original"] = Query(default="thumb"),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_media_user),
     db: Session = Depends(get_db),
 ) -> FileResponse:
     path, media_type, _filename = photo_service.photo_file(db, user.id, photo_id, size)

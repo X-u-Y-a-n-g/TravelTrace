@@ -1,6 +1,6 @@
 # Architecture
 
-TravelTrace v0.1.1 is a **modular monolith** with an asynchronous processing pipeline and a
+TravelTrace v0.2.0 is a **modular monolith** with an asynchronous processing pipeline and a
 separate frontend build. The design goal is to make the core loop — *import photos → reconstruct
 the map and timeline → edit → export* — complete and dependable, while leaving clear seams for
 tracks, journals and AI features in later releases.
@@ -138,7 +138,7 @@ Key properties:
 
 ## Timeline reconstruction
 
-v0.1.1 intentionally uses an explainable rule engine instead of a trained model.
+v0.2.0 intentionally uses an explainable rule engine instead of a trained model.
 
 1. Collect photos with a capture time in the trip (excluding photos already in a manual or confirmed
    event).
@@ -248,7 +248,7 @@ only to nginx; nginx proxies `/api` to FastAPI. Migrations run in the backend en
 server starts. Uploads and the database live in named volumes. See
 [deployment.md](deployment.md) for backup, upgrade and HTTPS details.
 
-## Deliberate v0.1.1 boundaries
+## Deliberate v0.2.0 boundaries
 
 - No GPX/KML/FIT import or track-to-photo matching yet (schema exists; scheduled for v0.2.0).
 - No journals, memory books, PDF export or public share pages (v0.3.0).

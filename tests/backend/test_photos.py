@@ -52,6 +52,19 @@ def test_photo_file_cookie_auth(client, auth, create_trip, upload_photo):
     assert client.get(f"/api/v1/photos/{photo_id}/file").status_code == 200
 
 
+def test_photo_file_accepts_media_token_query(client, auth, create_trip, upload_photo):
+    trip = create_trip(auth.headers)
+    _, task = upload_photo(auth.headers, trip_id=trip["id"])
+    photo_id = task["result"]["photo_ids"][0]
+
+    client.cookies.clear()
+    response = client.get(f"/api/v1/photos/{photo_id}/file?size=thumb&access_token={auth.token}")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("image/")
+
+    assert client.get(f"/api/v1/photos/{photo_id}/file?access_token=not-a-token").status_code == 401
+
+
 def test_upload_infers_trip_from_date(client, auth, create_trip, upload_photo):
     trip = create_trip(auth.headers)
     _, task = upload_photo(auth.headers, taken_at="2026-10-03T18:05:00")

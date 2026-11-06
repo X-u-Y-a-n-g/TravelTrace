@@ -1,5 +1,6 @@
 import { useAuthStore } from "@/stores/auth";
 
+import { getStoredApiBase, isNativeApp } from "./mobile";
 import type {
   Bootstrap,
   EventType,
@@ -30,7 +31,12 @@ import type {
 } from "./types";
 import { qs } from "./utils";
 
-export const API_BASE = import.meta.env.VITE_API_BASE ?? "/api/v1";
+export const DEFAULT_API_BASE = import.meta.env.VITE_API_BASE ?? "/api/v1";
+
+/** The API base currently in use. Native builds may point at a self-hosted server. */
+export function getApiBase(): string {
+  return getStoredApiBase() ?? DEFAULT_API_BASE;
+}
 
 export class ApiError extends Error {
   status: number;
@@ -69,7 +75,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE}${path}`, {
+    response = await fetch(`${getApiBase()}${path}`, {
       ...init,
       headers,
       body,
@@ -142,11 +148,17 @@ export interface PhotoUpdateInput {
 }
 
 export function photoUrl(photoId: string, size: PhotoSize = "thumb"): string {
-  return `${API_BASE}/photos/${photoId}/file?size=${size}`;
+  const params = new URLSearchParams({ size });
+  const token = useAuthStore.getState().token;
+  if (isNativeApp() && token) params.set("access_token", token);
+  return `${getApiBase()}/photos/${photoId}/file?${params.toString()}`;
 }
 
 export function tripExportUrl(tripId: string, includeOriginals = true): string {
-  return `${API_BASE}/trips/${tripId}/export${qs({ include_originals: includeOriginals })}`;
+  const params = new URLSearchParams({ include_originals: String(includeOriginals) });
+  const token = useAuthStore.getState().token;
+  if (isNativeApp() && token) params.set("access_token", token);
+  return `${getApiBase()}/trips/${tripId}/export?${params.toString()}`;
 }
 
 export const api = {

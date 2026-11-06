@@ -618,6 +618,32 @@ const en = {
   "settings.languageEnHint": "English interface",
   "settings.storageLimit": "{limit} MB / photo",
 
+  "mobile.setupEyebrow": "Mobile app",
+  "mobile.setupTitle": "Connect to your TravelTrace",
+  "mobile.setupDescription":
+    "Enter the address of the TravelTrace instance you want to browse. The app keeps your photos and journeys on your own server.",
+  "mobile.serverLabel": "Server address",
+  "mobile.serverPlaceholder": "https://travel.example.com",
+  "mobile.serverHint":
+    "HTTPS is recommended. A subpath such as https://example.com/traveltrace is supported.",
+  "mobile.connect": "Connect",
+  "mobile.connecting": "Connecting…",
+  "mobile.invalidUrl": "Enter a valid http:// or https:// server address.",
+  "mobile.unreachable":
+    "Could not reach the server. Check the address, HTTPS certificate and CORS settings.",
+  "mobile.notTravelTrace": "The server answered, but it does not look like TravelTrace.",
+  "mobile.docs": "Deployment guide",
+  "mobile.privacy": "Your photos and journeys stay on your server.",
+  "mobile.serverTitle": "Mobile server",
+  "mobile.serverDescription": "The TravelTrace instance this app connects to.",
+  "mobile.currentServer": "Current server",
+  "mobile.changeServer": "Change server",
+  "mobile.changeServerHint": "You will need to sign in again after changing the server.",
+  "mobile.changeServerConfirmTitle": "Change server?",
+  "mobile.changeServerConfirmDescription":
+    "The current session will be cleared. Data on your server is not affected.",
+  "mobile.changeServerConfirm": "Change server",
+
   "notFound.eyebrow": "Error 404",
   "notFound.title": "This trail doesn't exist.",
   "notFound.description":
@@ -1254,6 +1280,30 @@ export const zh: Record<TranslationKey, string> = {
   "settings.languageZhHint": "简体中文界面",
   "settings.languageEnHint": "English interface",
   "settings.storageLimit": "{limit} MB / 张",
+
+  "mobile.setupEyebrow": "手机端",
+  "mobile.setupTitle": "连接你的 TravelTrace",
+  "mobile.setupDescription":
+    "输入你的 TravelTrace 实例地址。照片和旅程数据始终保存在你自己的服务器上。",
+  "mobile.serverLabel": "服务器地址",
+  "mobile.serverPlaceholder": "https://travel.example.com",
+  "mobile.serverHint":
+    "推荐使用 HTTPS。也支持子路径，例如 https://example.com/traveltrace。",
+  "mobile.connect": "连接服务器",
+  "mobile.connecting": "正在连接…",
+  "mobile.invalidUrl": "请输入有效的 http:// 或 https:// 服务器地址。",
+  "mobile.unreachable": "无法连接服务器，请检查地址、HTTPS 证书和 CORS 配置。",
+  "mobile.notTravelTrace": "服务器有响应，但看起来不是 TravelTrace 实例。",
+  "mobile.docs": "部署指南",
+  "mobile.privacy": "照片和旅程始终保存在你的服务器上。",
+  "mobile.serverTitle": "手机端服务器",
+  "mobile.serverDescription": "当前 App 连接的 TravelTrace 实例。",
+  "mobile.currentServer": "当前服务器",
+  "mobile.changeServer": "更换服务器",
+  "mobile.changeServerHint": "更换服务器后需要重新登录。",
+  "mobile.changeServerConfirmTitle": "更换服务器？",
+  "mobile.changeServerConfirmDescription": "当前登录状态会被清除，服务器上的数据不受影响。",
+  "mobile.changeServerConfirm": "更换服务器",
 
   "notFound.eyebrow": "错误 404",
   "notFound.title": "这条小路不存在。",

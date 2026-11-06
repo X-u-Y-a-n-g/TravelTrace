@@ -43,6 +43,10 @@ uploads/
 *.sqlite
 *.sqlite3
 
+# --- Test artifacts --------------------------------------------------------
+pytest-of-*/
+.pytest_cache/
+
 # --- OS / editors ----------------------------------------------------------
 .DS_Store
 Thumbs.db

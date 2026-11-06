@@ -8,8 +8,33 @@ All notable changes to TravelTrace are documented here. The format follows
 
 ### Planned
 
-- GPX / GeoJSON / KML import and track-to-photo matching (v0.2.0).
-- Journals, memory books and HTML/PDF export (v0.3.0).
+- GPX / GeoJSON / KML import and track-to-photo matching (v0.3.0).
+- Journals, memory books and HTML/PDF export (v0.4.0).
+
+## [0.2.0] — 2026-11-06
+
+The first mobile release: an Android client built with Capacitor, connected to the same self-hosted
+API and UI.
+
+### Added
+
+- **Android app** — Capacitor shell with app icon, splash screen, status bar handling, hardware back
+  navigation and the full React interface bundled in the APK.
+- **Mobile server setup** — first launch asks for the self-hosted TravelTrace address, validates
+  `/api/v1/health`, remembers it and supports changing it from the login footer or Settings.
+- **Mobile media auth** — photo files and ZIP exports accept a JWT `access_token` query parameter so
+  WebView image tags and downloads work across origins. JSON API calls keep using bearer auth.
+- **Native link handling** — external links and downloads open in the system browser.
+- **Android CI** — GitHub Actions builds a debug APK on every push and uploads it as an artifact.
+- A prebuilt debug APK is included under [`mobile/`](mobile/) with build and install instructions.
+- Docker Compose and backend CORS defaults now allow the Capacitor origins (`http://localhost`,
+  `https://localhost`, `capacitor://localhost`).
+
+### Changed
+
+- Version bumped to `0.2.0` across the backend, frontend, Android project, OpenAPI document and
+  documentation.
+- Roadmap: GPX/KML reconstruction moves to v0.3.0 and journals/memory books to v0.4.0.
 
 ## [0.1.1] — 2026-11-06
 

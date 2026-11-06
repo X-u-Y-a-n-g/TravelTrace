@@ -6,7 +6,7 @@
 
   <p>
     <a href="https://github.com/X-u-Y-a-n-g/TravelTrace/actions/workflows/ci.yml"><img src="https://github.com/X-u-Y-a-n-g/TravelTrace/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-    <img src="https://img.shields.io/badge/version-0.1.1-1f3d33" alt="v0.1.1" />
+    <img src="https://img.shields.io/badge/version-0.2.0-1f3d33" alt="v0.2.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-c9a873" alt="MIT" /></a>
     <img src="https://img.shields.io/badge/python-3.10%2B-366150" alt="Python 3.10+" />
     <img src="https://img.shields.io/badge/react-18-2c4e42" alt="React 18" />
@@ -41,6 +41,7 @@
 - **开放导出**：每次旅行导出 ZIP，包含 `trip.json`、`timeline.json`、`places.geojson`、
   `photos.json`、`manifest.json` 与原图。
 - **一键部署**：Docker Compose（PostGIS + Redis + Celery worker + nginx），自动执行数据库迁移。
+- **Android 客户端**：基于 Capacitor，可连接任意自托管实例，包含启动图、状态栏、返回键处理和首次启动的服务器配置页。
 - **中英双语**：完整中文 / 英文界面，默认中文，登录页、侧边栏和设置中均可切换，选择会被记住。
 - **隐私优先**：默认私有、原图鉴权访问、默认不调用任何第三方服务。
 
@@ -99,6 +100,27 @@ python demo/seed.py --api http://localhost:8080/api/v1
 并生成草稿时间线。照片来源见 [`demo/ATTRIBUTION.md`](demo/ATTRIBUTION.md)。
 
 > 演示账号仅用于本地体验，请勿在公网实例上运行种子脚本。
+
+### Android 客户端
+
+Android 客户端位于 `frontend/android`，使用 Capacitor 打包。首次启动时输入你的 TravelTrace
+服务器地址即可连接。
+
+```bash
+cd frontend
+npm ci
+npm run mobile:sync
+cd android
+./gradlew assembleDebug      # Windows: .\gradlew.bat assembleDebug
+```
+
+APK 输出路径为 `frontend/android/app/build/outputs/apk/debug/app-debug.apk`。环境要求、签名、
+服务器 CORS 与安全说明见 [`docs/mobile.md`](docs/mobile.md)。可侧载的调试版 APK 位于
+[`mobile/`](mobile/README.md)。
+
+| Android 连接页（中文） | Android setup (English) |
+| --- | --- |
+| ![Android 连接页](docs/screenshots/mobile/01-setup-zh.png) | ![Android setup](docs/screenshots/mobile/02-setup-en.png) |
 
 ### 本地开发
 
@@ -162,7 +184,7 @@ npx playwright test
 ```
 
 GitHub Actions 会运行后端 lint 与测试（含 PostGIS 服务）、前端 lint / 类型检查 / 单元测试 / 构建、
-Playwright 端到端测试以及 Docker 镜像构建。
+Playwright 端到端测试、Android APK 构建以及 Docker 镜像构建。
 
 ## 隐私与安全
 
@@ -178,12 +200,12 @@ Playwright 端到端测试以及 Docker 镜像构建。
 
 ## 路线图
 
-- **v0.2.0 — Travel Reconstruction**：GPX / GeoJSON / KML 导入、轨迹与照片匹配、自动事件生成增强、
+- **v0.3.0 — Travel Reconstruction**：GPX / GeoJSON / KML 导入、轨迹与照片匹配、自动事件生成增强、
   每日摘要、地点自动识别。
-- **v0.3.0 — Memory Experience**：旅行日志、回忆册、HTML / PDF 导出、分享页面、旅行统计。
+- **v0.4.0 — Memory Experience**：旅行日志、回忆册、HTML / PDF 导出、分享页面、旅行统计。
 - **v1.0.0 — Intelligent Travel Platform**：AI 摘要、个性化推荐、多设备同步、多人协作、插件数据源。
 
-v0.1.1 有意保持聚焦：先把 **上传 → 地图 → 时间线 → 编辑 → 导出** 这条闭环做完整、稳定、好用。
+v0.2.0 有意保持聚焦：先把 **上传 → 地图 → 时间线 → 编辑 → 导出** 这条闭环做完整、稳定、好用。
 
 ## 贡献
 
