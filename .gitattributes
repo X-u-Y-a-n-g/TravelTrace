@@ -1,0 +1,16 @@
+* text=auto eol=lf
+
+# Windows scripts keep CRLF; everything that runs in Linux containers stays LF.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.sh text eol=lf
+
+# Binary assets
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.webp binary
+*.gif binary
+*.woff2 binary
+*.ico binary

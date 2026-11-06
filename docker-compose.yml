@@ -1,0 +1,101 @@
+name: traveltrace
+
+x-backend-environment: &backend-environment
+  TRAVELTRACE_ENVIRONMENT: production
+  TRAVELTRACE_DATABASE_URL: postgresql+psycopg://traveltrace:${POSTGRES_PASSWORD:-traveltrace}@db:5432/traveltrace
+  TRAVELTRACE_SECRET_KEY: ${TRAVELTRACE_SECRET_KEY:-local-development-secret-change-me}
+  TRAVELTRACE_STORAGE_DIR: /data/uploads
+  TRAVELTRACE_AUTO_CREATE_TABLES: "false"
+  TRAVELTRACE_TASK_BACKEND: ${TRAVELTRACE_TASK_BACKEND:-celery}
+  TRAVELTRACE_CELERY_BROKER_URL: redis://redis:6379/0
+  TRAVELTRACE_CELERY_RESULT_BACKEND: redis://redis:6379/1
+  TRAVELTRACE_ALLOW_REGISTRATION: ${TRAVELTRACE_ALLOW_REGISTRATION:-true}
+  TRAVELTRACE_GEOCODING_PROVIDER: ${TRAVELTRACE_GEOCODING_PROVIDER:-none}
+  TRAVELTRACE_EXIFTOOL_ENABLED: "true"
+  TRAVELTRACE_CORS_ORIGINS: ${TRAVELTRACE_CORS_ORIGINS:-http://localhost:8080}
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: traveltrace
+      POSTGRES_USER: traveltrace
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-traveltrace}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U traveltrace -d traveltrace"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    environment: *backend-environment
+    volumes:
+      - uploads:/data/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    # Publish this only if you want to bypass nginx during debugging.
+    # ports:
+    #   - "8000:8000"
+
+  worker:
+    build:
+      context: ./backend
+    command:
+      [
+        "celery",
+        "-A",
+        "app.tasks.celery_app.celery_app",
+        "worker",
+        "--loglevel=INFO",
+        "--concurrency=2",
+      ]
+    environment:
+      <<: *backend-environment
+      TRAVELTRACE_SKIP_MIGRATIONS: "true"
+    volumes:
+      - uploads:/data/uploads
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_MAP_STYLE_URL: ${VITE_MAP_STYLE_URL:-https://tiles.openfreemap.org/styles/positron}
+    ports:
+      - "${TRAVELTRACE_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  redis_data:
+  uploads:

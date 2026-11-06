@@ -1,0 +1,11 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+blob-report/
+.cache/
+e2e/
+scripts/
+*.log
+Dockerfile
+.dockerignore

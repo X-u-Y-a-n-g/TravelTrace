@@ -1,0 +1,177 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 43% 96%;
+    --foreground: 155 22% 12%;
+    --card: 42 50% 99%;
+    --card-foreground: 155 22% 12%;
+    --popover: 42 50% 99%;
+    --popover-foreground: 155 22% 12%;
+    --primary: 157 32% 21%;
+    --primary-foreground: 42 45% 95%;
+    --secondary: 40 32% 90%;
+    --secondary-foreground: 155 22% 16%;
+    --muted: 40 28% 92%;
+    --muted-foreground: 155 9% 42%;
+    --accent: 25 68% 48%;
+    --accent-foreground: 42 60% 98%;
+    --destructive: 4 64% 47%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 24% 86%;
+    --input: 40 24% 84%;
+    --ring: 157 32% 30%;
+    --radius: 0.9rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings:
+      "cv02" on,
+      "cv03" on,
+      "cv04" on,
+      "ss01" on;
+    background-image:
+      radial-gradient(1200px 600px at 12% -10%, rgba(188, 145, 87, 0.14), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(73, 122, 100, 0.1), transparent 55%);
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display font-semibold tracking-tight text-foreground;
+    font-variation-settings: "SOFT" 40, "WONK" 0;
+  }
+
+  ::selection {
+    background: rgba(212, 114, 42, 0.22);
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .page-shell {
+    @apply mx-auto w-full max-w-[1320px] px-5 pb-20 pt-6 sm:px-8 lg:px-10;
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground;
+  }
+
+  .surface {
+    @apply rounded-3xl border border-border/80 bg-card/80 shadow-soft backdrop-blur-sm;
+  }
+
+  .hairline {
+    @apply border-t border-border/70;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .map-canvas canvas {
+    outline: none;
+  }
+
+  .maplibregl-popup-content {
+    @apply rounded-2xl border border-border bg-card p-3 text-sm shadow-lift;
+  }
+
+  .maplibregl-popup-tip {
+    border-top-color: hsl(var(--card)) !important;
+  }
+
+  .maplibregl-ctrl-group {
+    @apply rounded-xl border border-border bg-card/95 shadow-soft;
+    overflow: hidden;
+  }
+
+  .maplibregl-ctrl-group button {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes content-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+[data-radix-popper-content-wrapper] {
+  z-index: 80 !important;
+}
