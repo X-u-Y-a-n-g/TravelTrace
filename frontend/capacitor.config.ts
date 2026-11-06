@@ -12,11 +12,9 @@ const config: CapacitorConfig = {
   appName: "TravelTrace",
   webDir: "dist",
   server: {
-    androidScheme: "http",
-    cleartext: true,
+    androidScheme: "https",
   },
   android: {
-    allowMixedContent: true,
     backgroundColor: "#f7f2e8",
   },
   plugins: {

@@ -11,12 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/i18n";
 import { ApiError, api } from "@/lib/api";
-import {
-  clearStoredApiBase,
-  getStoredApiBase,
-  isNativeApp,
-  serverLabel,
-} from "@/lib/mobile";
 import { useBootstrap } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
@@ -103,7 +97,6 @@ export function LoginPage() {
 
   const hasUsers = bootstrap.data?.has_users ?? false;
   const registrationAllowed = bootstrap.data?.registration_enabled !== false || !hasUsers;
-  const nativeBase = isNativeApp() ? getStoredApiBase() : null;
 
   const canSubmit =
     mode === "login"
@@ -342,19 +335,6 @@ export function LoginPage() {
           <p className="mt-8 text-center text-[11px] leading-relaxed text-muted-foreground">
             {t("login.privacyNote")}
           </p>
-
-          {nativeBase && (
-            <button
-              type="button"
-              onClick={() => {
-                clearStoredApiBase();
-                window.location.reload();
-              }}
-              className="mx-auto mt-3 block max-w-full truncate rounded-full px-3 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-            >
-              {t("mobile.currentServer")}: {serverLabel(nativeBase)} · {t("mobile.changeServer")}
-            </button>
-          )}
         </div>
       </section>
     </div>

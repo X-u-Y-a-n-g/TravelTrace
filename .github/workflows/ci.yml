@@ -88,6 +88,47 @@ jobs:
       - name: Build
         run: npm run build
 
+  desktop:
+    name: Desktop · Windows EXE
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install backend and desktop tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e "backend[dev]"
+          python -m pip install -r desktop/requirements.txt
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Build EXE
+        run: pyinstaller desktop/traveltrace.spec --noconfirm --clean
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: traveltrace-windows-desktop
+          path: dist/TravelTrace.exe
+          retention-days: 14
+
   android:
     name: Android · debug APK
     runs-on: ubuntu-latest

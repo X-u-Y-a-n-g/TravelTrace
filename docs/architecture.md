@@ -1,6 +1,6 @@
 # Architecture
 
-TravelTrace v0.2.0 is a **modular monolith** with an asynchronous processing pipeline and a
+TravelTrace v0.3.0 is a **modular monolith** with an asynchronous processing pipeline and a
 separate frontend build. The design goal is to make the core loop — *import photos → reconstruct
 the map and timeline → edit → export* — complete and dependable, while leaving clear seams for
 tracks, journals and AI features in later releases.
@@ -138,7 +138,7 @@ Key properties:
 
 ## Timeline reconstruction
 
-v0.2.0 intentionally uses an explainable rule engine instead of a trained model.
+v0.3.0 intentionally uses an explainable rule engine instead of a trained model.
 
 1. Collect photos with a capture time in the trip (excluding photos already in a manual or confirmed
    event).
@@ -241,6 +241,22 @@ flowchart LR
 - **Error handling** is centralized in the fetch client: the API's normalized error envelope becomes
   an `ApiError` with `status`, `code`, `message` and optional field details.
 
+## Single-machine modes
+
+The hosted browser + FastAPI architecture is still available, and two self-contained builds reuse it:
+
+- **Windows desktop** (`desktop/`) starts the same FastAPI app in-process with SQLite, serves the
+  built React UI over loopback, and opens it in a pywebview window. A PyInstaller one-file EXE
+  bundles the backend, migrations-compatible schema, uploads directory and UI. Existing
+  `traveltrace.db` + `uploads` folders can be imported on first launch.
+- **Android** (`frontend/android`) is fully offline. When Capacitor reports a native platform, the
+  frontend switches from the HTTP client to `src/local/api.ts`: a Dexie/IndexedDB implementation of
+  the same trip, place, photo, timeline, map, statistics and settings contracts. EXIF reading,
+  SHA-256 deduplication and thumbnails run in the WebView; media is served from object URLs rather
+  than HTTP. No account, server URL or network is required.
+
+Map tiles are the only remaining network dependency; photo data, timelines and edits stay local.
+
 ## Deployment topology
 
 `docker compose` runs nginx, FastAPI, a Celery worker, PostgreSQL/PostGIS and Redis. The browser talks
@@ -248,9 +264,9 @@ only to nginx; nginx proxies `/api` to FastAPI. Migrations run in the backend en
 server starts. Uploads and the database live in named volumes. See
 [deployment.md](deployment.md) for backup, upgrade and HTTPS details.
 
-## Deliberate v0.2.0 boundaries
+## Deliberate v0.3.0 boundaries
 
-- No GPX/KML/FIT import or track-to-photo matching yet (schema exists; scheduled for v0.2.0).
+- No GPX/KML/FIT import or track-to-photo matching yet (schema exists; scheduled for v0.3.0).
 - No journals, memory books, PDF export or public share pages (v0.3.0).
 - No AI, recommendations or collaboration.
 - HEIC/HEIF uploads are rejected; JPEG, PNG and WebP are supported.

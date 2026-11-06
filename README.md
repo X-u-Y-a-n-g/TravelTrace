@@ -6,7 +6,7 @@
 
   <p>
     <a href="https://github.com/X-u-Y-a-n-g/TravelTrace/actions/workflows/ci.yml"><img src="https://github.com/X-u-Y-a-n-g/TravelTrace/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-    <img src="https://img.shields.io/badge/version-0.2.0-1f3d33" alt="Version 0.2.0" />
+    <img src="https://img.shields.io/badge/version-0.3.0-1f3d33" alt="Version 0.3.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-c9a873" alt="MIT License" /></a>
     <img src="https://img.shields.io/badge/python-3.10%2B-366150" alt="Python 3.10+" />
     <img src="https://img.shields.io/badge/react-18-2c4e42" alt="React 18" />
@@ -41,7 +41,7 @@ enable an external geocoding provider. No accounts on someone else's cloud, no a
 | **Local-first** | PostgreSQL/PostGIS, local storage and open formats. Everything can be exported as a ZIP. |
 | **Honest automation** | The system proposes; you decide. Automatic drafts never overwrite your manual edits. |
 
-## Features in v0.2.0
+## Features in v0.3.0
 
 - **Trips** — create, edit, archive, restore, cover photo, visibility (private / unlisted / public).
 - **Photo import** — batch upload, SHA-256 deduplication, EXIF capture time, GPS, camera, lens, orientation, previews and thumbnails without metadata.
@@ -52,8 +52,10 @@ enable an external geocoding provider. No accounts on someone else's cloud, no a
 - **Dashboard** — journeys, countries, cities, places, photos, days on the road, storage usage, yearly rhythm, recent frames.
 - **Portable export** — one ZIP per trip containing `trip.json`, `timeline.json`, `places.geojson`, `photos.json`, `manifest.json` and the original photos.
 - **Deployment** — Docker Compose with PostGIS, Redis, a Celery worker, nginx and automatic migrations.
-- **Android app** — Capacitor client that connects to any self-hosted instance, with native splash,
-  status bar, back handling and a first-launch server setup screen.
+- **Windows desktop app** — one EXE with an embedded FastAPI server, SQLite and photo storage;
+  imports existing local data and runs without Docker or a separate server.
+- **Android app** — a fully offline Capacitor client. Photos, trips, places and timelines are stored
+  in IndexedDB on the device; no account, server or network setup is required.
 - **Bilingual interface** — complete Chinese and English UI with a persistent language switcher; Chinese is the default.
 - **Privacy by default** — authenticated image files, private trips, no third-party calls unless you enable geocoding.
 
@@ -126,8 +128,9 @@ CC-licensed travel photos from `demo/photos/`, then generates draft timelines. S
 
 ### Android app
 
-The Android client is built with Capacitor and lives in `frontend/android`. It bundles the React UI
-and asks for your TravelTrace server address on first launch.
+The Android client is built with Capacitor and lives in `frontend/android`. It is a **standalone,
+offline app**: photos, trips, places and timelines live in IndexedDB on the phone. No server URL,
+account or network is required.
 
 ```bash
 cd frontend
@@ -138,12 +141,28 @@ cd android
 ```
 
 The APK is written to `frontend/android/app/build/outputs/apk/debug/app-debug.apk`. Requirements,
-release signing, server/CORS details and security notes are in [`docs/mobile.md`](docs/mobile.md).
+release signing, local storage and export details are in [`docs/mobile.md`](docs/mobile.md).
 A prebuilt debug APK for sideloading is in [`mobile/`](mobile/README.md).
 
-| Android setup (中文) | Android setup (English) |
-| --- | --- |
-| ![Android setup Chinese](docs/screenshots/mobile/01-setup-zh.png) | ![Android setup English](docs/screenshots/mobile/02-setup-en.png) |
+### Desktop app (Windows EXE)
+
+The desktop build bundles FastAPI, SQLite, the photo store and the React UI into one executable using
+PyInstaller and pywebview:
+
+```powershell
+cd E:\path\to\TravelTrace
+.\desktop\build.ps1
+```
+
+The EXE is written to `dist\TravelTrace.exe`. On first launch it detects nearby
+`backend\data` / `.cache\devdata` folders and offers to import the existing SQLite database and
+photos. Data is stored in `%APPDATA%\TravelTrace`. A prebuilt build is available at
+[`desktop/TravelTrace-0.3.0.exe`](desktop/TravelTrace-0.3.0.exe); see
+[`desktop/README.md`](desktop/README.md).
+
+| Android app (中文) |
+| --- |
+| ![Android offline dashboard](docs/screenshots/mobile/01-dashboard.png) |
 
 ### Local development
 
@@ -264,8 +283,8 @@ The backend suite runs on SQLite for speed. A separate opt-in test validates the
 `geography` type against a live PostgreSQL database (`TRAVELTRACE_TEST_DATABASE_URL`), and CI runs
 it against the `postgis/postgis` service.
 
-CI also builds the Android debug APK on every push and uploads it as the `traveltrace-android-debug`
-artifact.
+CI also builds the Windows desktop EXE and the Android debug APK on every push and uploads them as
+the `traveltrace-windows-desktop` and `traveltrace-android-debug` artifacts.
 
 ## Project layout
 
@@ -274,6 +293,7 @@ TravelTrace/
 ├── backend/            FastAPI app, models, services, processors, Alembic migrations
 ├── frontend/           React + TypeScript + MapLibre UI
 │   └── android/        Capacitor Android project
+├── desktop/            Windows EXE launcher and PyInstaller spec
 ├── mobile/             Prebuilt debug APK and install notes
 ├── demo/               Seed script and CC-licensed demo photos
 ├── docs/               Architecture, database, API, development and deployment guides
@@ -287,14 +307,14 @@ TravelTrace/
 
 ## Roadmap
 
-- **v0.3.0 — Travel Reconstruction** — GPX / GeoJSON / KML import, track-to-photo matching, smarter
+- **v0.4.0 — Travel Reconstruction** — GPX / GeoJSON / KML import, track-to-photo matching, smarter
   clustering, automatic place recognition, daily summaries.
-- **v0.4.0 — Memory Experience** — journals, memory books, HTML/PDF export, richer statistics,
+- **v0.5.0 — Memory Experience** — journals, memory books, HTML/PDF export, richer statistics,
   public share pages.
 - **v1.0.0 — Intelligent Travel Platform** — optional AI summaries, personalised recommendations,
   multi-device sync, collaboration and plugin data sources.
 
-The v0.2.0 goal is intentionally narrow: make the loop **upload → map → timeline → edit → export**
+The v0.3.0 goal is intentionally narrow: make the loop **upload → map → timeline → edit → export**
 complete, stable and pleasant. AI and social features are not part of this release.
 
 ## Privacy and security

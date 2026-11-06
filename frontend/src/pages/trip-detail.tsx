@@ -43,7 +43,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useI18n } from "@/i18n";
-import { api, tripExportUrl } from "@/lib/api";
+import { api } from "@/lib/api";
+import { downloadTripZip } from "@/local/export";
 import { EVENT_TYPE_ICONS, PLACE_CATEGORY_COLORS, PLACE_CATEGORY_ICONS } from "@/lib/constants";
 import { useMarkers, usePhotos, useRoutes, useTimeline, useTrip } from "@/lib/queries";
 import type { MapMarker, TimelineEvent, TripPlace } from "@/lib/types";
@@ -249,11 +250,13 @@ export function TripDetailPage() {
                   <Pencil className="size-4" />
                   {t("trip.editDetails")}
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <a href={tripExportUrl(trip.id)} download>
-                    <Download className="size-4" />
-                    {t("trip.exportZip")}
-                  </a>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    void downloadTripZip(trip.id).catch((error) => toast.error(errorText(error)));
+                  }}
+                >
+                  <Download className="size-4" />
+                  {t("trip.exportZip")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem destructive onSelect={() => setDeleteTripOpen(true)}>

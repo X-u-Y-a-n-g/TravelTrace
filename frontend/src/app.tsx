@@ -25,6 +25,7 @@ import { TripDetailPage } from "@/pages/trip-detail";
 import { TripsPage } from "@/pages/trips";
 
 function SessionGate() {
+  const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const clear = useAuthStore((state) => state.clear);
   const me = useMe(true);
@@ -34,7 +35,7 @@ function SessionGate() {
     else if (me.error instanceof ApiError && me.error.status === 401) clear();
   }, [me.data, me.error, setUser, clear]);
 
-  if (me.isLoading) return <Splash />;
+  if (me.isLoading || (me.data && !user)) return <Splash />;
 
   return (
     <Routes>

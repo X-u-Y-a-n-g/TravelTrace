@@ -8,8 +8,37 @@ All notable changes to TravelTrace are documented here. The format follows
 
 ### Planned
 
-- GPX / GeoJSON / KML import and track-to-photo matching (v0.3.0).
-- Journals, memory books and HTML/PDF export (v0.4.0).
+- GPX / GeoJSON / KML import and track-to-photo matching (v0.4.0).
+- Journals, memory books and HTML/PDF export (v0.5.0).
+
+## [0.3.0] — 2026-11-06
+
+The single-machine release: the desktop app packages the backend, database and photos into one
+Windows EXE, and the Android app stores everything locally without a server.
+
+### Added
+
+- **Windows desktop EXE** — PyInstaller + pywebview shell that runs FastAPI, SQLite and local photo
+  storage in-process and opens a native window. No Docker, PostgreSQL or separate server needed.
+- **Existing data import** — the desktop app detects `backend/data` / `.cache/devdata`, prompts to
+  import the SQLite database and uploads folder, and can also do it with
+  `--import-data <path>`. Existing accounts keep working.
+- **Android offline mode** — a full IndexedDB data layer for trips, places, photos, EXIF metadata,
+  thumbnails, timeline events, map markers, statistics and settings. No server address, account or
+  network setup is required.
+- **Local photo pipeline** — client-side EXIF reading (`exifr`), SHA-256 deduplication, canvas
+  thumbnails/previews, automatic trip/place matching and draft timeline generation.
+- **Offline ZIP export** — exports trip metadata, timeline, GeoJSON and originals with JSZip; on
+  Android the ZIP is written to the cache and opened with the system share sheet.
+- **Desktop/Android CI** — GitHub Actions builds the Windows EXE and Android debug APK artifacts.
+
+### Changed
+
+- Version bumped to `0.3.0` across the backend, frontend, Android project, OpenAPI document and
+  documentation.
+- Android no longer asks for a server address; it opens directly into the local journal.
+- Settings shows local storage details instead of a server address on Android.
+- Roadmap: GPX/KML reconstruction moves to v0.4.0 and journals/memory books to v0.5.0.
 
 ## [0.2.0] — 2026-11-06
 

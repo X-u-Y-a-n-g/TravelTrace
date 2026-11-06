@@ -16,7 +16,7 @@ def test_bootstrap_first_run(client):
     body = response.json()
     assert body["has_users"] is False
     assert body["registration_enabled"] is True
-    assert body["app_version"] == "0.2.0"
+    assert body["app_version"] == "0.3.0"
 
 
 def test_register_sets_cookie_and_returns_user(client):

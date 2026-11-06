@@ -8,7 +8,7 @@ const en = {
   "app.tagline": "Your journey, reconstructed.",
   "app.localFirstTitle": "Local-first by design",
   "app.localFirstBody":
-    "Your photos and tracks stay on your own server. Nothing leaves unless you enable it.",
+    "Your photos and journeys stay on your own device. Nothing leaves unless you enable it.",
   "app.openSource": "Open source · MIT licensed",
   "app.language": "Language",
 
@@ -584,6 +584,7 @@ const en = {
   "settings.environmentDevelopment": "Development",
   "settings.environmentProduction": "Production",
   "settings.environmentTest": "Test",
+  "settings.environmentLocal": "Local",
   "settings.photos": "Photos",
   "settings.trips": "Trips",
   "settings.storageUsed": "Storage used",
@@ -643,6 +644,9 @@ const en = {
   "mobile.changeServerConfirmDescription":
     "The current session will be cleared. Data on your server is not affected.",
   "mobile.changeServerConfirm": "Change server",
+  "local.storageTitle": "Local storage",
+  "local.storageDescription": "Your photos, trips and timeline live on this device.",
+  "local.storageNote": "Single-machine mode does not need an account or a server.",
 
   "notFound.eyebrow": "Error 404",
   "notFound.title": "This trail doesn't exist.",
@@ -695,7 +699,7 @@ export const zh: Record<TranslationKey, string> = {
   "app.tagline": "你的旅程，重新展开。",
   "app.localFirstTitle": "本地优先设计",
   "app.localFirstBody":
-    "照片与轨迹都保存在你自己的服务器上。除非你主动开启，否则不会离开这里。",
+    "照片与旅程都保存在你自己的设备上。除非你主动开启，否则不会离开这里。",
   "app.openSource": "开源 · MIT 许可",
   "app.language": "语言",
 
@@ -1251,6 +1255,7 @@ export const zh: Record<TranslationKey, string> = {
   "settings.environmentDevelopment": "开发",
   "settings.environmentProduction": "生产",
   "settings.environmentTest": "测试",
+  "settings.environmentLocal": "本地",
   "settings.photos": "照片",
   "settings.trips": "旅行",
   "settings.storageUsed": "已用存储",
@@ -1304,6 +1309,9 @@ export const zh: Record<TranslationKey, string> = {
   "mobile.changeServerConfirmTitle": "更换服务器？",
   "mobile.changeServerConfirmDescription": "当前登录状态会被清除，服务器上的数据不受影响。",
   "mobile.changeServerConfirm": "更换服务器",
+  "local.storageTitle": "本地存储",
+  "local.storageDescription": "照片、旅行和时间线都保存在当前设备上。",
+  "local.storageNote": "本地单机模式不需要账号或服务器。",
 
   "notFound.eyebrow": "错误 404",
   "notFound.title": "这条小路不存在。",

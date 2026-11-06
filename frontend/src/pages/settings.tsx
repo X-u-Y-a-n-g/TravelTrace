@@ -9,7 +9,6 @@ import {
   LogOut,
   MapPinned,
   ShieldCheck,
-  Smartphone,
   Sparkles,
   UserRound,
 } from "lucide-react";
@@ -18,26 +17,19 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Avatar } from "@/components/common/avatar";
-import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
 import { useI18n } from "@/i18n";
-import { api, tripExportUrl } from "@/lib/api";
+import { api } from "@/lib/api";
 import { formatBytes } from "@/lib/format";
-import {
-  clearStoredApiBase,
-  getStoredApiBase,
-  isNativeApp,
-  serverLabel,
-} from "@/lib/mobile";
-import { useInstanceSettings, useTrips } from "@/lib/queries";
-import { cn } from "@/lib/utils";
+import { downloadTripZip } from "@/local/export";
+import { isNativeApp } from "@/lib/mobile";import { useInstanceSettings, useTrips } from "@/lib/queries";
 import { useAuthStore } from "@/stores/auth";
 
 export function SettingsPage() {
@@ -54,8 +46,8 @@ export function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [exportTripId, setExportTripId] = useState("");
-  const [changeServerOpen, setChangeServerOpen] = useState(false);
-  const nativeBase = isNativeApp() ? getStoredApiBase() : null;
+  const [exporting, setExporting] = useState(false);
+  const localMode = isNativeApp();
 
   useEffect(() => {
     setDisplayName(user?.display_name ?? user?.username ?? "");
@@ -174,39 +166,45 @@ export function SettingsPage() {
             </CardContent>
           </Card>
 
-          {nativeBase && (
+          {localMode && (
             <Card>
               <CardHeader className="flex-row items-center gap-3 space-y-0">
                 <span className="flex size-10 items-center justify-center rounded-xl bg-pine-100 text-pine-700">
-                  <Smartphone className="size-4" />
+                  <HardDrive className="size-4" />
                 </span>
                 <div>
-                  <CardTitle>{t("mobile.serverTitle")}</CardTitle>
-                  <CardDescription>{t("mobile.serverDescription")}</CardDescription>
+                  <CardTitle>{t("local.storageTitle")}</CardTitle>
+                  <CardDescription>{t("local.storageDescription")}</CardDescription>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="rounded-2xl bg-secondary/50 p-3.5">
-                  <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                    {t("mobile.currentServer")}
-                  </p>
-                  <p className="mt-1 break-all text-sm font-medium">{serverLabel(nativeBase)}</p>
+                <div className="grid grid-cols-2 gap-3 rounded-2xl bg-secondary/50 p-3.5 text-sm">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                      {t("settings.photos")}
+                    </p>
+                    <p className="mt-1 font-display text-xl font-semibold">
+                      {instance?.photo_count ?? 0}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                      {t("settings.trips")}
+                    </p>
+                    <p className="mt-1 font-display text-xl font-semibold">
+                      {instance?.trip_count ?? 0}
+                    </p>
+                  </div>
                 </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  {t("mobile.changeServerHint")}
+                  {t("local.storageNote")}
                 </p>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setChangeServerOpen(true)}
-                >
-                  {t("mobile.changeServer")}
-                </Button>
               </CardContent>
             </Card>
           )}
 
-          <Card>
+          {!localMode && (
+            <Card>
             <CardHeader className="flex-row items-center gap-3 space-y-0">
               <span className="flex size-10 items-center justify-center rounded-xl bg-ember-100 text-ember-700">
                 <KeyRound className="size-4" />
@@ -254,6 +252,7 @@ export function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+          )}
 
           <Card>
             <CardHeader className="flex-row items-center gap-3 space-y-0">
@@ -283,14 +282,23 @@ export function SettingsPage() {
                   </Select>
                 </div>
                 {exportTripId ? (
-                  <a
-                    href={tripExportUrl(exportTripId)}
-                    className={cn(buttonVariants({ variant: "default" }), "h-10")}
-                    download
+                  <Button
+                    className="h-10"
+                    disabled={exporting}
+                    onClick={async () => {
+                      setExporting(true);
+                      try {
+                        await downloadTripZip(exportTripId);
+                      } catch (error) {
+                        toast.error(errorText(error));
+                      } finally {
+                        setExporting(false);
+                      }
+                    }}
                   >
-                    <Download className="size-4" />
+                    {exporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
                     {t("settings.downloadZip")}
-                  </a>
+                  </Button>
                 ) : (
                   <Button disabled>
                     <Download className="size-4" />
@@ -327,7 +335,9 @@ export function SettingsPage() {
                         ? t("settings.environmentTest")
                         : instance?.environment === "development"
                           ? t("settings.environmentDevelopment")
-                          : (instance?.environment ?? "—")}
+                          : instance?.environment === "local"
+                            ? t("settings.environmentLocal")
+                            : (instance?.environment ?? "—")}
                   </dd>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -417,35 +427,22 @@ export function SettingsPage() {
                 <span className="text-border">·</span>
                 <span className="text-xs">{t("settings.mit")}</span>
                 <span className="text-border">·</span>
-                <span className="text-xs">v{instance?.app_version ?? "0.1.1"}</span>
+                <span className="text-xs">v{instance?.app_version ?? "0.3.0"}</span>
               </div>
-              <Button
-                variant="outline"
-                className="mt-2 w-full text-destructive hover:bg-red-50 hover:text-destructive"
-                onClick={() => logout.mutate()}
-              >
-                <LogOut className="size-4" />
-                {t("settings.signOut")}
-              </Button>
+              {!localMode && (
+                <Button
+                  variant="outline"
+                  className="mt-2 w-full text-destructive hover:bg-red-50 hover:text-destructive"
+                  onClick={() => logout.mutate()}
+                >
+                  <LogOut className="size-4" />
+                  {t("settings.signOut")}
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
-
-      <ConfirmDialog
-        open={changeServerOpen}
-        onOpenChange={setChangeServerOpen}
-        title={t("mobile.changeServerConfirmTitle")}
-        description={t("mobile.changeServerConfirmDescription")}
-        confirmLabel={t("mobile.changeServerConfirm")}
-        cancelLabel={t("common.cancel")}
-        onConfirm={() => {
-          clearStoredApiBase();
-          clear();
-          queryClient.clear();
-          window.location.reload();
-        }}
-      />
     </div>
   );
 }

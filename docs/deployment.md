@@ -1,6 +1,6 @@
 # Deployment
 
-TravelTrace v0.2.0 ships as a Docker Compose stack: nginx + React, FastAPI, a Celery worker,
+TravelTrace v0.3.0 ships as a Docker Compose stack: nginx + React, FastAPI, a Celery worker,
 PostgreSQL 16 with PostGIS 3.4, and Redis 7.
 
 ## Requirements
@@ -140,7 +140,7 @@ Firewall the host so only 80/443 are public. Do not expose PostgreSQL or Redis.
    bundled nginx setup is same-origin and does not need it.
 6. Take a first backup.
 
-There is no password-reset email in v0.2.0. Store the password in a password manager; the owner can
+There is no password-reset email in v0.3.0. Store the password in a password manager; the owner can
 create accounts while registration is open and then close it again.
 
 ## Backups and restore
@@ -200,7 +200,7 @@ moving tags for `postgres`, `redis` and `nginx` within their major versions.
 
 ## Migrating from the SQLite development database
 
-There is no automated SQLite → PostgreSQL migration in v0.2.0. The supported path is to deploy
+There is no automated SQLite → PostgreSQL migration in v0.3.0. The supported path is to deploy
 PostgreSQL and re-import photos through the API (metadata is re-extracted from the originals). A
 generic importer is on the roadmap. Do not edit the database by hand.
 

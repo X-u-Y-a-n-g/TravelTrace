@@ -6,7 +6,7 @@
 
   <p>
     <a href="https://github.com/X-u-Y-a-n-g/TravelTrace/actions/workflows/ci.yml"><img src="https://github.com/X-u-Y-a-n-g/TravelTrace/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-    <img src="https://img.shields.io/badge/version-0.2.0-1f3d33" alt="v0.2.0" />
+    <img src="https://img.shields.io/badge/version-0.3.0-1f3d33" alt="v0.3.0" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-c9a873" alt="MIT" /></a>
     <img src="https://img.shields.io/badge/python-3.10%2B-366150" alt="Python 3.10+" />
     <img src="https://img.shields.io/badge/react-18-2c4e42" alt="React 18" />
@@ -41,7 +41,9 @@
 - **开放导出**：每次旅行导出 ZIP，包含 `trip.json`、`timeline.json`、`places.geojson`、
   `photos.json`、`manifest.json` 与原图。
 - **一键部署**：Docker Compose（PostGIS + Redis + Celery worker + nginx），自动执行数据库迁移。
-- **Android 客户端**：基于 Capacitor，可连接任意自托管实例，包含启动图、状态栏、返回键处理和首次启动的服务器配置页。
+- **Windows 单机版**：一个 EXE 内置 FastAPI、SQLite 和照片存储，可导入现有本地数据，无需 Docker 或单独服务。
+- **Android 客户端**：完全离线的 Capacitor App。照片、旅行、地点和时间线全部保存在手机本地
+  IndexedDB 中，不需要账号、服务器或网络配置。
 - **中英双语**：完整中文 / 英文界面，默认中文，登录页、侧边栏和设置中均可切换，选择会被记住。
 - **隐私优先**：默认私有、原图鉴权访问、默认不调用任何第三方服务。
 
@@ -103,8 +105,8 @@ python demo/seed.py --api http://localhost:8080/api/v1
 
 ### Android 客户端
 
-Android 客户端位于 `frontend/android`，使用 Capacitor 打包。首次启动时输入你的 TravelTrace
-服务器地址即可连接。
+Android 客户端位于 `frontend/android`，使用 Capacitor 打包，是**完全离线的单机 App**：
+照片、旅行、地点和时间线都保存在手机本地 IndexedDB 中，不需要服务器地址、账号或网络。
 
 ```bash
 cd frontend
@@ -115,12 +117,26 @@ cd android
 ```
 
 APK 输出路径为 `frontend/android/app/build/outputs/apk/debug/app-debug.apk`。环境要求、签名、
-服务器 CORS 与安全说明见 [`docs/mobile.md`](docs/mobile.md)。可侧载的调试版 APK 位于
+本地存储与导出说明见 [`docs/mobile.md`](docs/mobile.md)。可侧载的调试版 APK 位于
 [`mobile/`](mobile/README.md)。
 
-| Android 连接页（中文） | Android setup (English) |
-| --- | --- |
-| ![Android 连接页](docs/screenshots/mobile/01-setup-zh.png) | ![Android setup](docs/screenshots/mobile/02-setup-en.png) |
+### 电脑版（Windows EXE）
+
+桌面版把 FastAPI、SQLite、照片存储和 React 界面一起打包成单个 EXE：
+
+```powershell
+cd E:\path\to\TravelTrace
+.\desktop\build.ps1
+```
+
+输出为 `dist\TravelTrace.exe`。首次启动会自动发现附近的 `backend\data` / `.cache\devdata`
+目录，并提示导入现有 SQLite 数据库和照片。数据保存在 `%APPDATA%\TravelTrace`。预构建版本位于
+[`desktop/TravelTrace-0.3.0.exe`](desktop/TravelTrace-0.3.0.exe)，详见
+[`desktop/README.md`](desktop/README.md)。
+
+| Android 离线手账 |
+| --- |
+| ![Android 离线仪表盘](docs/screenshots/mobile/01-dashboard.png) |
 
 ### 本地开发
 
@@ -184,7 +200,7 @@ npx playwright test
 ```
 
 GitHub Actions 会运行后端 lint 与测试（含 PostGIS 服务）、前端 lint / 类型检查 / 单元测试 / 构建、
-Playwright 端到端测试、Android APK 构建以及 Docker 镜像构建。
+Playwright 端到端测试、Android APK 构建、Windows EXE 构建以及 Docker 镜像构建。
 
 ## 隐私与安全
 
@@ -200,12 +216,12 @@ Playwright 端到端测试、Android APK 构建以及 Docker 镜像构建。
 
 ## 路线图
 
-- **v0.3.0 — Travel Reconstruction**：GPX / GeoJSON / KML 导入、轨迹与照片匹配、自动事件生成增强、
+- **v0.4.0 — Travel Reconstruction**：GPX / GeoJSON / KML 导入、轨迹与照片匹配、自动事件生成增强、
   每日摘要、地点自动识别。
-- **v0.4.0 — Memory Experience**：旅行日志、回忆册、HTML / PDF 导出、分享页面、旅行统计。
+- **v0.5.0 — Memory Experience**：旅行日志、回忆册、HTML / PDF 导出、分享页面、旅行统计。
 - **v1.0.0 — Intelligent Travel Platform**：AI 摘要、个性化推荐、多设备同步、多人协作、插件数据源。
 
-v0.2.0 有意保持聚焦：先把 **上传 → 地图 → 时间线 → 编辑 → 导出** 这条闭环做完整、稳定、好用。
+v0.3.0 有意保持聚焦：先把 **上传 → 地图 → 时间线 → 编辑 → 导出** 这条闭环做完整、稳定、好用。
 
 ## 贡献
 

@@ -1,5 +1,7 @@
 import { useAuthStore } from "@/stores/auth";
 
+import { localApi } from "@/local/api";
+import { localPhotoUrl } from "@/local/photo-cache";
 import { getStoredApiBase, isNativeApp } from "./mobile";
 import type {
   Bootstrap,
@@ -148,6 +150,7 @@ export interface PhotoUpdateInput {
 }
 
 export function photoUrl(photoId: string, size: PhotoSize = "thumb"): string {
+  if (isNativeApp()) return localPhotoUrl(photoId, size);
   const params = new URLSearchParams({ size });
   const token = useAuthStore.getState().token;
   if (isNativeApp() && token) params.set("access_token", token);
@@ -161,7 +164,7 @@ export function tripExportUrl(tripId: string, includeOriginals = true): string {
   return `${getApiBase()}/trips/${tripId}/export?${params.toString()}`;
 }
 
-export const api = {
+const serverApi = {
   auth: {
     bootstrap: () => request<Bootstrap>("/auth/bootstrap"),
     register: (payload: {
@@ -309,5 +312,7 @@ export const api = {
     get: () => request<InstanceSettings>("/settings"),
   },
 };
+
+export const api = (isNativeApp() ? localApi : serverApi) as typeof serverApi;
 
 export type { MapMarker };
