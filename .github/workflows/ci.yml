@@ -145,14 +145,14 @@ jobs:
             sleep 1
           done
 
-      - name: Install Playwright Chromium
-        working-directory: frontend
-        run: npx playwright install --with-deps chromium
+      - name: Verify Chrome
+        run: google-chrome --version
 
       - name: Run Playwright
         working-directory: frontend
         env:
           E2E_BASE_URL: http://127.0.0.1:4173
+          E2E_CHANNEL: chrome
         run: npx playwright test
 
       - name: Upload traces on failure
