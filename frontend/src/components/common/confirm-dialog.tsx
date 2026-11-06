@@ -10,14 +10,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/skeleton";
+import { useI18n } from "@/i18n";
 
 export function ConfirmDialog({
   open,
   onOpenChange,
   title,
   description,
-  confirmLabel = "Delete",
-  cancelLabel = "Cancel",
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   loading = false,
   destructive = true,
@@ -34,6 +35,7 @@ export function ConfirmDialog({
   destructive?: boolean;
   children?: ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -44,7 +46,7 @@ export function ConfirmDialog({
         {children}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-            {cancelLabel}
+            {cancelLabel ?? t("common.cancel")}
           </Button>
           <Button
             variant={destructive ? "destructive" : "default"}
@@ -52,7 +54,7 @@ export function ConfirmDialog({
             disabled={loading}
           >
             {loading && <Spinner />}
-            {confirmLabel}
+            {confirmLabel ?? t("common.delete")}
           </Button>
         </DialogFooter>
       </DialogContent>

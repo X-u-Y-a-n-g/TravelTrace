@@ -6,6 +6,8 @@ import {
   parseISO,
 } from "date-fns";
 
+export type Language = "zh" | "en";
+
 export function parseDate(value: string | null | undefined): Date | null {
   if (!value) return null;
   const parsed = parseISO(value);

@@ -16,7 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ApiError, api, type TripInput } from "@/lib/api";
+import { useI18n } from "@/i18n";
+import { api, type TripInput } from "@/lib/api";
 import { VISIBILITY_OPTIONS } from "@/lib/constants";
 import { dateInputValue } from "@/lib/format";
 import type { Trip, Visibility } from "@/lib/types";
@@ -32,6 +33,7 @@ export function TripFormDialog({
   trip?: Trip | null;
   onSaved?: (trip: Trip) => void;
 }) {
+  const { t, errorText } = useI18n();
   const queryClient = useQueryClient();
   const editing = Boolean(trip);
   const [title, setTitle] = useState("");
@@ -55,18 +57,17 @@ export function TripFormDialog({
     mutationFn: (payload: TripInput) =>
       editing && trip ? api.trips.update(trip.id, payload) : api.trips.create(payload),
     onSuccess: (saved) => {
-      toast.success(editing ? "Trip updated" : "Trip created", {
-        description: editing ? undefined : "Add photos to start rebuilding this journey.",
-      });
+      toast.success(
+        editing ? t("tripForm.updatedToast") : t("tripForm.createdToast"),
+        editing ? undefined : { description: t("tripForm.createdToastDescription") },
+      );
       queryClient.invalidateQueries({ queryKey: ["trips"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
       onSaved?.(saved);
       onOpenChange(false);
     },
     onError: (mutationError) => {
-      setError(
-        mutationError instanceof ApiError ? mutationError.message : "Could not save the trip",
-      );
+      setError(errorText(mutationError) || t("tripForm.saveError"));
     },
   });
 
@@ -90,22 +91,22 @@ export function TripFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>{editing ? "Edit trip" : "Start a new journey"}</DialogTitle>
+          <DialogTitle>
+            {editing ? t("tripForm.editTitle") : t("tripForm.createTitle")}
+          </DialogTitle>
           <DialogDescription>
-            {editing
-              ? "Update the details of this journey. Photos and timeline stay untouched."
-              : "Give this journey a name. You can add photos, places and a timeline next."}
+            {editing ? t("tripForm.editDescription") : t("tripForm.createDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="trip-title">Title</Label>
+            <Label htmlFor="trip-title">{t("tripForm.title")}</Label>
             <Input
               id="trip-title"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Japan in autumn"
+              placeholder={t("tripForm.titlePlaceholder")}
               autoFocus
               maxLength={160}
               required
@@ -114,7 +115,7 @@ export function TripFormDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="trip-start">Start date</Label>
+              <Label htmlFor="trip-start">{t("tripForm.startDate")}</Label>
               <Input
                 id="trip-start"
                 type="date"
@@ -123,7 +124,7 @@ export function TripFormDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="trip-end">End date</Label>
+              <Label htmlFor="trip-end">{t("tripForm.endDate")}</Label>
               <Input
                 id="trip-end"
                 type="date"
@@ -133,12 +134,10 @@ export function TripFormDialog({
               />
             </div>
           </div>
-          {datesInvalid && (
-            <p className="text-xs text-destructive">The end date must be after the start date.</p>
-          )}
+          {datesInvalid && <p className="text-xs text-destructive">{t("tripForm.datesInvalid")}</p>}
 
           <div className="space-y-1.5">
-            <Label htmlFor="trip-visibility">Visibility</Label>
+            <Label htmlFor="trip-visibility">{t("tripForm.visibility")}</Label>
             <Select
               id="trip-visibility"
               value={visibility}
@@ -146,22 +145,25 @@ export function TripFormDialog({
             >
               {VISIBILITY_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label}
+                  {t(option.labelKey)}
                 </option>
               ))}
             </Select>
             <p className="text-xs text-muted-foreground">
-              {VISIBILITY_OPTIONS.find((option) => option.value === visibility)?.hint}
+              {t(
+                VISIBILITY_OPTIONS.find((option) => option.value === visibility)?.hintKey ??
+                  "visibility.privateHint",
+              )}
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="trip-description">Description</Label>
+            <Label htmlFor="trip-description">{t("tripForm.description")}</Label>
             <Textarea
               id="trip-description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="A few words about this journey…"
+              placeholder={t("tripForm.descriptionPlaceholder")}
               rows={3}
               maxLength={20000}
             />
@@ -174,12 +176,16 @@ export function TripFormDialog({
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={mutation.isPending}>
-              Cancel
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={mutation.isPending}
+            >
+              {t("tripForm.cancel")}
             </Button>
             <Button type="submit" disabled={!canSubmit}>
               {mutation.isPending && <Loader2 className="size-4 animate-spin" />}
-              {editing ? "Save changes" : "Create trip"}
+              {editing ? t("tripForm.save") : t("tripForm.create")}
             </Button>
           </DialogFooter>
         </form>

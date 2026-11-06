@@ -117,7 +117,7 @@ def test_empty_overview(client, auth):
 def test_instance_settings(client, auth):
     body = client.get("/api/v1/settings", headers=auth.headers).json()
     assert body["app_name"] == "TravelTrace"
-    assert body["app_version"] == "0.1.0"
+    assert body["app_version"] == "0.1.1"
     assert body["max_upload_mb"] > 0
     assert body["geocoding_enabled"] is False
     assert body["storage_used_bytes"] == 0

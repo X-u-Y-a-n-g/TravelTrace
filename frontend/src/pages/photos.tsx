@@ -22,13 +22,15 @@ import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ApiError, api } from "@/lib/api";
+import { useI18n } from "@/i18n";
+import { api } from "@/lib/api";
 import { PHOTO_SORT_OPTIONS } from "@/lib/constants";
 import { useDebouncedValue } from "@/lib/hooks";
 import { usePhotos, useStats, useTrips } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 export function PhotosPage() {
+  const { t, f, errorText } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const stats = useStats();
@@ -92,9 +94,12 @@ export function PhotosPage() {
         trip_id: bulkTrip,
       }),
     onSuccess: (result) => {
-      toast.success(`${result.updated} photo${result.updated === 1 ? "" : "s"} assigned`, {
-        description: "They now appear in the trip and its map.",
-      });
+      toast.success(
+        result.updated === 1
+          ? t("photos.assignSuccessOne")
+          : t("photos.assignSuccess", { count: result.updated }),
+        { description: t("photos.assignDescription") },
+      );
       queryClient.invalidateQueries({ queryKey: ["photos"] });
       queryClient.invalidateQueries({ queryKey: ["trips"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
@@ -104,7 +109,7 @@ export function PhotosPage() {
       setBulkTrip("");
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : "Could not assign photos");
+      toast.error(errorText(error));
     },
   });
 
@@ -135,9 +140,9 @@ export function PhotosPage() {
   return (
     <div className="page-shell">
       <PageHeader
-        eyebrow="Library"
-        title="Every frame, in one place"
-        description="Browse the original library. Fix a location, add a caption, or move photos into the right journey."
+        eyebrow={t("photos.eyebrow")}
+        title={t("photos.title")}
+        description={t("photos.description")}
         actions={
           <>
             {photos.data?.items.length ? (
@@ -146,12 +151,12 @@ export function PhotosPage() {
                 onClick={selecting ? stopSelecting : startSelecting}
               >
                 {selecting ? <X className="size-4" /> : <CheckSquare className="size-4" />}
-                {selecting ? "Cancel selection" : "Select"}
+                {selecting ? t("photos.cancelSelection") : t("photos.select")}
               </Button>
             ) : null}
             <Button variant="accent" onClick={() => setUploadOpen(true)}>
               <Upload className="size-4" />
-              Upload photos
+              {t("photos.uploadPhotos")}
             </Button>
           </>
         }
@@ -164,20 +169,20 @@ export function PhotosPage() {
             <Input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search captions, filenames or camera…"
+              placeholder={t("photos.searchPlaceholder")}
               className="pl-10"
-              aria-label="Search photos"
+              aria-label={t("photos.searchLabel")}
             />
           </div>
           <div className="grid grid-cols-2 gap-2 sm:flex">
             <Select
               value={tripFilter}
               onChange={(event) => setTripFilter(event.target.value)}
-              aria-label="Filter by trip"
+              aria-label={t("photos.tripFilter")}
               className="sm:w-[190px]"
             >
-              <option value="">All trips</option>
-              <option value="unsorted">Unsorted only</option>
+              <option value="">{t("photos.allTrips")}</option>
+              <option value="unsorted">{t("photos.unsortedOnly")}</option>
               {trips.data?.items.map((trip) => (
                 <option key={trip.id} value={trip.id}>
                   {trip.title}
@@ -187,22 +192,22 @@ export function PhotosPage() {
             <Select
               value={gpsFilter}
               onChange={(event) => setGpsFilter(event.target.value)}
-              aria-label="Filter by GPS"
+              aria-label={t("photos.gpsFilter")}
               className="sm:w-[150px]"
             >
-              <option value="all">Any location</option>
-              <option value="gps">With GPS</option>
-              <option value="nogps">Without GPS</option>
+              <option value="all">{t("photos.anyLocation")}</option>
+              <option value="gps">{t("photos.withGps")}</option>
+              <option value="nogps">{t("photos.withoutGps")}</option>
             </Select>
             <Select
               value={sort}
               onChange={(event) => setSort(event.target.value)}
-              aria-label="Sort photos"
+              aria-label={t("photos.sortLabel")}
               className="sm:w-[165px]"
             >
               {PHOTO_SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label}
+                  {t(option.labelKey)}
                 </option>
               ))}
             </Select>
@@ -212,18 +217,18 @@ export function PhotosPage() {
               aria-pressed={favoritesOnly}
             >
               <Star className="size-4" fill={favoritesOnly ? "currentColor" : "none"} />
-              Favourites
+              {t("photos.favourites")}
             </Button>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <span>
-            {photos.data ? `${photos.data.total} photo${photos.data.total === 1 ? "" : "s"}` : "Loading…"}
+            {photos.data ? t("common.photoCount", { count: photos.data.total }) : t("common.loading")}
           </span>
           <span>·</span>
-          <span>{stats.data?.gps_photos ?? 0} geotagged</span>
+          <span>{t("photos.geotagged", { count: stats.data?.gps_photos ?? 0 })}</span>
           <span>·</span>
-          <span>{stats.data?.favorite_photos ?? 0} favourites</span>
+          <span>{t("photos.favouriteCount", { count: stats.data?.favorite_photos ?? 0 })}</span>
           {isFiltered && (
             <Button
               variant="ghost"
@@ -236,7 +241,7 @@ export function PhotosPage() {
                 setFavoritesOnly(false);
               }}
             >
-              Clear filters
+              {t("photos.clearFilters")}
             </Button>
           )}
         </div>
@@ -253,7 +258,11 @@ export function PhotosPage() {
           ))}
         </div>
       ) : photos.isError ? (
-        <ErrorState onRetry={() => photos.refetch()} />
+        <ErrorState
+          title={t("error.load")}
+          message={t("error.description")}
+          onRetry={() => photos.refetch()}
+        />
       ) : photos.data && photos.data.items.length > 0 ? (
         <>
           <div className="columns-2 gap-3 sm:columns-3 xl:columns-4">
@@ -284,7 +293,7 @@ export function PhotosPage() {
                   />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-pine-950/70 via-pine-950/10 to-transparent p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                     <span className="truncate text-[10px] font-medium text-white/90">
-                      {photo.taken_at ? photo.taken_at.slice(0, 10) : "No date"}
+                      {photo.taken_at ? f.date(photo.taken_at) : t("common.noDate")}
                       {photo.place ? ` · ${photo.place.name}` : ""}
                     </span>
                     {photo.is_favorite && <Star className="size-3.5 shrink-0 text-amber-300" fill="currentColor" />}
@@ -307,10 +316,10 @@ export function PhotosPage() {
                 disabled={page <= 1}
                 onClick={() => setPage((current) => Math.max(current - 1, 1))}
               >
-                Previous
+                {t("common.previous")}
               </Button>
               <span className="text-xs text-muted-foreground">
-                Page {photos.data.page} of {photos.data.pages}
+                {t("common.pageOf", { page: photos.data.page, pages: photos.data.pages })}
               </span>
               <Button
                 variant="outline"
@@ -318,7 +327,7 @@ export function PhotosPage() {
                 disabled={page >= photos.data.pages}
                 onClick={() => setPage((current) => current + 1)}
               >
-                Next
+                {t("common.next")}
               </Button>
             </div>
           )}
@@ -326,11 +335,9 @@ export function PhotosPage() {
       ) : (
         <EmptyState
           icon={isFiltered ? Search : Images}
-          title={isFiltered ? "No photos match this filter" : "Your library is waiting"}
+          title={isFiltered ? t("photos.noMatchTitle") : t("photos.emptyTitle")}
           description={
-            isFiltered
-              ? "Try another trip, location or search term."
-              : "Upload the photos from your trip. EXIF time and GPS will rebuild the map and timeline."
+            isFiltered ? t("photos.noMatchDescription") : t("photos.emptyDescription")
           }
           action={
             isFiltered ? (
@@ -343,12 +350,12 @@ export function PhotosPage() {
                   setFavoritesOnly(false);
                 }}
               >
-                Clear filters
+                {t("photos.clearFilters")}
               </Button>
             ) : (
               <Button variant="accent" onClick={() => setUploadOpen(true)}>
                 <Upload className="size-4" />
-                Import your first photos
+                {t("photos.importFirst")}
               </Button>
             )
           }
@@ -359,18 +366,18 @@ export function PhotosPage() {
         <div className="fixed inset-x-0 bottom-20 z-30 flex justify-center px-3 lg:bottom-6">
           <div className="flex w-full max-w-2xl flex-col gap-2 rounded-2xl border border-border bg-card/95 p-2.5 shadow-lift backdrop-blur sm:flex-row sm:items-center">
             <Badge variant="default" className="w-fit">
-              {selectedIds.size} selected
+              {t("photos.selected", { count: selectedIds.size })}
             </Badge>
             <span className="flex-1 text-xs text-muted-foreground">
-              Move the selection into a journey.
+              {t("photos.moveSelection")}
             </span>
             <Select
               value={bulkTrip}
               onChange={(event) => setBulkTrip(event.target.value)}
-              aria-label="Assign to trip"
+              aria-label={t("photos.assign")}
               className="h-9 w-full sm:w-[190px]"
             >
-              <option value="">Choose a trip…</option>
+              <option value="">{t("photos.chooseTrip")}</option>
               {trips.data?.items.map((trip) => (
                 <option key={trip.id} value={trip.id}>
                   {trip.title}
@@ -382,10 +389,10 @@ export function PhotosPage() {
               disabled={!selectedIds.size || !bulkTrip || bulkAssign.isPending}
               onClick={() => bulkAssign.mutate()}
             >
-              Assign
+              {t("photos.assign")}
             </Button>
             <Button variant="ghost" size="sm" onClick={stopSelecting}>
-              Cancel
+              {t("photos.cancel")}
             </Button>
           </div>
         </div>

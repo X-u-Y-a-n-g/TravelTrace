@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     # --- Identity ---------------------------------------------------------
     app_name: str = "TravelTrace"
-    app_version: str = "0.1.0"
+    app_version: str = "0.1.1"
     environment: Literal["development", "test", "production"] = "development"
     api_v1_prefix: str = "/api/v1"
 

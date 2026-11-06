@@ -22,8 +22,9 @@ import { Select } from "@/components/ui/select";
 import { Sheet, SheetBody, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { ApiError, api, photoUrl, type PhotoUpdateInput } from "@/lib/api";
-import { dateInputValue, formatBytes, formatDateTime, timeInputValue } from "@/lib/format";
+import { useI18n } from "@/i18n";
+import { api, photoUrl, type PhotoUpdateInput } from "@/lib/api";
+import { dateInputValue, formatBytes, timeInputValue } from "@/lib/format";
 import { usePhoto, usePlaces, useTrips } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +39,7 @@ export function PhotoDetailSheet({
   onOpenChange: (open: boolean) => void;
   onChanged?: () => void;
 }) {
+  const { t, f, errorText } = useI18n();
   const queryClient = useQueryClient();
   const photoQuery = usePhoto(photoId);
   const trips = useTrips({ size: 100, sort: "start_date_desc" });
@@ -82,24 +84,24 @@ export function PhotoDetailSheet({
     mutationFn: (payload: PhotoUpdateInput) => api.photos.update(photoId as string, payload),
     onSuccess: (updated) => {
       queryClient.setQueryData(["photos", "detail", photoId], updated);
-      toast.success("Photo updated");
+      toast.success(t("photo.updated"));
       invalidate();
     },
     onError: (mutationError) => {
-      setError(mutationError instanceof ApiError ? mutationError.message : "Could not save");
+      setError(errorText(mutationError) || t("photo.saveError"));
     },
   });
 
   const remove = useMutation({
     mutationFn: () => api.photos.remove(photoId as string),
     onSuccess: () => {
-      toast.success("Photo removed from the library");
+      toast.success(t("photo.removed"));
       invalidate();
       setConfirmDelete(false);
       onOpenChange(false);
     },
     onError: (mutationError) => {
-      toast.error(mutationError instanceof ApiError ? mutationError.message : "Could not delete");
+      toast.error(errorText(mutationError) || t("photo.deleteError"));
     },
   });
 
@@ -108,7 +110,7 @@ export function PhotoDetailSheet({
     const hasLatitude = latitude.trim() !== "";
     const hasLongitude = longitude.trim() !== "";
     if (hasLatitude !== hasLongitude) {
-      setError("Latitude and longitude must be filled together.");
+      setError(t("photo.coordinatesTogether"));
       return;
     }
     let coordinates: { latitude: number | null; longitude: number | null } = {
@@ -119,7 +121,7 @@ export function PhotoDetailSheet({
       const lat = Number(latitude);
       const lon = Number(longitude);
       if (Number.isNaN(lat) || Number.isNaN(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
-        setError("Coordinates are out of range.");
+        setError(t("photo.coordinatesRange"));
         return;
       }
       coordinates = { latitude: lat, longitude: lon };
@@ -160,10 +162,10 @@ export function PhotoDetailSheet({
               <SheetHeader>
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="eyebrow">Photo</p>
+                    <p className="eyebrow">{t("common.photo")}</p>
                     <SheetTitle className="truncate">{photo.original_filename}</SheetTitle>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {formatDateTime(photo.taken_at)} · {photo.original_filename}
+                      {f.dateTime(photo.taken_at)} · {photo.original_filename}
                     </p>
                   </div>
                   <button
@@ -175,7 +177,7 @@ export function PhotoDetailSheet({
                         ? "bg-ember-100 text-ember-600"
                         : "text-muted-foreground hover:bg-secondary",
                     )}
-                    aria-label={photo.is_favorite ? "Remove from favourites" : "Add to favourites"}
+                    aria-label={photo.is_favorite ? t("photo.favoriteRemove") : t("photo.favoriteAdd")}
                   >
                     <Star
                       className="size-5"
@@ -196,13 +198,13 @@ export function PhotoDetailSheet({
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="photo-trip">Trip</Label>
+                    <Label htmlFor="photo-trip">{t("photo.trip")}</Label>
                     <Select
                       id="photo-trip"
                       value={tripId}
                       onChange={(event) => setTripId(event.target.value)}
                     >
-                      <option value="">No trip (unsorted)</option>
+                      <option value="">{t("photo.noTrip")}</option>
                       {trips.data?.items.map((trip) => (
                         <option key={trip.id} value={trip.id}>
                           {trip.title}
@@ -211,13 +213,13 @@ export function PhotoDetailSheet({
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="photo-place">Place</Label>
+                    <Label htmlFor="photo-place">{t("photo.place")}</Label>
                     <Select
                       id="photo-place"
                       value={placeId}
                       onChange={(event) => setPlaceId(event.target.value)}
                     >
-                      <option value="">No place</option>
+                      <option value="">{t("photo.noPlace")}</option>
                       {tripPlaces.map((place) => (
                         <option key={place.id} value={place.id}>
                           {place.name}
@@ -229,12 +231,12 @@ export function PhotoDetailSheet({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="photo-caption">Caption</Label>
+                  <Label htmlFor="photo-caption">{t("photo.caption")}</Label>
                   <Textarea
                     id="photo-caption"
                     value={caption}
                     onChange={(event) => setCaption(event.target.value)}
-                    placeholder="What do you remember about this moment?"
+                    placeholder={t("photo.captionPlaceholder")}
                     rows={3}
                     maxLength={2000}
                   />
@@ -242,7 +244,7 @@ export function PhotoDetailSheet({
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="photo-date">Date taken</Label>
+                    <Label htmlFor="photo-date">{t("photo.dateTaken")}</Label>
                     <Input
                       id="photo-date"
                       type="date"
@@ -251,7 +253,7 @@ export function PhotoDetailSheet({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="photo-time">Time taken</Label>
+                    <Label htmlFor="photo-time">{t("photo.timeTaken")}</Label>
                     <Input
                       id="photo-time"
                       type="time"
@@ -263,41 +265,41 @@ export function PhotoDetailSheet({
 
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <Label>Location</Label>
+                    <Label>{t("photo.location")}</Label>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setPickerOpen((current) => !current)}
                     >
                       <MapPin className="size-3.5" />
-                      {pickerOpen ? "Hide map" : "Pick on map"}
+                      {pickerOpen ? t("photo.hideMap") : t("photo.pickOnMap")}
                     </Button>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Input
                       value={latitude}
                       onChange={(event) => setLatitude(event.target.value)}
-                      placeholder="Latitude"
+                      placeholder={t("photo.latitude")}
                       inputMode="decimal"
-                      aria-label="Latitude"
+                      aria-label={t("photo.latitude")}
                     />
                     <Input
                       value={longitude}
                       onChange={(event) => setLongitude(event.target.value)}
-                      placeholder="Longitude"
+                      placeholder={t("photo.longitude")}
                       inputMode="decimal"
-                      aria-label="Longitude"
+                      aria-label={t("photo.longitude")}
                     />
                   </div>
                   <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                     <Badge variant={photo.has_gps ? "default" : "muted"} className="text-[10px]">
                       {photo.gps_source === "exif"
-                        ? "GPS from camera"
+                        ? t("photo.gpsFromCamera")
                         : photo.gps_source === "manual"
-                          ? "Manually placed"
-                          : "No GPS"}
+                          ? t("photo.gpsManual")
+                          : t("photo.gpsNone")}
                     </Badge>
-                    <span>Changes never overwrite the original file.</span>
+                    <span>{t("photo.gpsNote")}</span>
                   </div>
                   {pickerOpen && (
                     <LocationPicker
@@ -316,19 +318,19 @@ export function PhotoDetailSheet({
                     <Camera className="size-3.5 text-muted-foreground" />
                     <span>
                       {[photo.camera_make, photo.camera_model].filter(Boolean).join(" ") ||
-                        "Camera unknown"}
+                        t("photo.cameraUnknown")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <HardDrive className="size-3.5 text-muted-foreground" />
                     <span>
-                      {photo.width && photo.height ? `${photo.width} × ${photo.height}` : "Dimensions unknown"}{" "}
+                      {photo.width && photo.height ? `${photo.width} × ${photo.height}` : t("photo.dimensionsUnknown")}{" "}
                       · {formatBytes(photo.file_size)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CalendarDays className="size-3.5 text-muted-foreground" />
-                    <span>Added {formatDateTime(photo.created_at)}</span>
+                    <span>{t("photo.added", { date: f.dateTime(photo.created_at) })}</span>
                   </div>
                   <a
                     href={photoUrl(photo.id, "original")}
@@ -337,7 +339,7 @@ export function PhotoDetailSheet({
                     className="flex items-center gap-2 text-primary hover:underline"
                   >
                     <MapPin className="size-3.5" />
-                    Open original
+                    {t("photo.openOriginal")}
                   </a>
                 </div>
 
@@ -355,14 +357,14 @@ export function PhotoDetailSheet({
                   onClick={() => setConfirmDelete(true)}
                 >
                   <Trash2 className="size-4" />
-                  Delete
+                  {t("photo.delete")}
                 </Button>
                 <Button variant="outline" onClick={() => onOpenChange(false)}>
-                  Close
+                  {t("photo.close")}
                 </Button>
                 <Button onClick={save} disabled={update.isPending}>
                   {update.isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-                  Save changes
+                  {t("photo.save")}
                 </Button>
               </SheetFooter>
             </>
@@ -373,9 +375,10 @@ export function PhotoDetailSheet({
       <ConfirmDialog
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
-        title="Delete this photo?"
-        description="It will be removed from the map, timeline and library. The original file is kept on disk for now."
-        confirmLabel="Delete photo"
+        title={t("photo.deleteTitle")}
+        description={t("photo.deleteDescription")}
+        confirmLabel={t("photo.deleteConfirm")}
+        cancelLabel={t("common.cancel")}
         loading={remove.isPending}
         onConfirm={() => remove.mutate()}
       />

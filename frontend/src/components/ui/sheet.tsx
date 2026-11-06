@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { forwardRef } from "react";
 
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 
 export const Sheet = DialogPrimitive.Root;
 export const SheetTrigger = DialogPrimitive.Trigger;
@@ -29,7 +30,7 @@ export const SheetContent = forwardRef<
       {children}
       <DialogPrimitive.Close className="absolute right-4 top-4 z-10 rounded-full bg-card/80 p-1.5 text-muted-foreground shadow-sm transition-colors hover:bg-secondary hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
         <X className="size-4" />
-        <span className="sr-only">Close</span>
+        <CloseLabel />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPrimitive.Portal>
@@ -65,4 +66,9 @@ export function SheetFooter({ className, ...props }: React.HTMLAttributes<HTMLDi
       {...props}
     />
   );
+}
+
+function CloseLabel() {
+  const { t } = useI18n();
+  return <span className="sr-only">{t("common.close")}</span>;
 }

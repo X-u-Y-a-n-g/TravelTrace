@@ -12,6 +12,7 @@ import {
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { Avatar } from "@/components/common/avatar";
+import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { Logo, LogoMark } from "@/components/common/logo";
 import {
   DropdownMenu,
@@ -23,18 +24,23 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import { useAuthStore } from "@/stores/auth";
 
 const NAV_ITEMS = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/map", label: "Map", icon: MapIcon },
-  { to: "/trips", label: "Trips", icon: Luggage },
-  { to: "/photos", label: "Photos", icon: Images },
-];
+  { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, end: true },
+  { to: "/map", labelKey: "nav.map", icon: MapIcon, end: false },
+  { to: "/trips", labelKey: "nav.trips", icon: Luggage, end: false },
+  { to: "/photos", labelKey: "nav.photos", icon: Images, end: false },
+] as const;
 
-const MOBILE_ITEMS = [...NAV_ITEMS, { to: "/settings", label: "Settings", icon: Settings, end: false }];
+const MOBILE_ITEMS = [
+  ...NAV_ITEMS,
+  { to: "/settings", labelKey: "nav.settings", icon: Settings, end: false },
+] as const;
 
 export function AppShell() {
+  const { t } = useI18n();
   const user = useAuthStore((state) => state.user);
   const clear = useAuthStore((state) => state.clear);
   const navigate = useNavigate();
@@ -49,12 +55,12 @@ export function AppShell() {
     },
   });
 
-  const displayName = user?.display_name || user?.username || "Traveller";
+  const displayName = user?.display_name || user?.username || t("common.traveller");
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[252px_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-screen flex-col border-r border-border/70 bg-[#f7f2e8]/80 px-4 py-6 backdrop-blur lg:flex">
-        <Link to="/" className="px-2" aria-label="TravelTrace home">
+        <Link to="/" className="px-2" aria-label="TravelTrace">
           <Logo />
         </Link>
 
@@ -65,30 +71,40 @@ export function AppShell() {
           )}
         >
           <Plus className="size-4" />
-          New trip
+          {t("nav.newTrip")}
         </Link>
 
         <nav className="mt-8 flex flex-1 flex-col gap-6">
           <div className="space-y-1">
             <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80">
-              Journal
+              {t("nav.journal")}
             </p>
             {NAV_ITEMS.map((item) => (
-              <SidebarLink key={item.to} {...item} />
+              <SidebarLink
+                key={item.to}
+                to={item.to}
+                label={t(item.labelKey)}
+                icon={item.icon}
+                end={item.end}
+              />
             ))}
           </div>
           <div className="space-y-1">
             <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80">
-              Account
+              {t("nav.account")}
             </p>
-            <SidebarLink to="/settings" label="Settings" icon={Settings} />
+            <SidebarLink to="/settings" label={t("nav.settings")} icon={Settings} />
           </div>
         </nav>
 
+        <LanguageSwitcher className="mb-3 self-center" />
+
         <div className="mb-4 rounded-2xl border border-pine-200/60 bg-pine-50/60 p-3.5">
-          <p className="font-display text-sm font-semibold text-pine-900">Local-first by design</p>
+          <p className="font-display text-sm font-semibold text-pine-900">
+            {t("app.localFirstTitle")}
+          </p>
           <p className="mt-1 text-[11px] leading-relaxed text-pine-800/70">
-            Your photos and tracks stay on your own server. Nothing leaves unless you enable it.
+            {t("app.localFirstBody")}
           </p>
         </div>
 
@@ -111,7 +127,7 @@ export function AppShell() {
             <DropdownMenuItem asChild>
               <Link to="/settings">
                 <Settings className="size-4" />
-                Settings
+                {t("nav.settings")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -124,7 +140,7 @@ export function AppShell() {
               }}
             >
               <LogOut className="size-4" />
-              Sign out
+              {t("nav.signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -136,9 +152,12 @@ export function AppShell() {
             <LogoMark className="size-8" />
             <span className="font-display text-lg font-semibold">TravelTrace</span>
           </Link>
-          <Link to="/settings" aria-label="Settings">
-            <Avatar name={displayName} size="sm" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <Link to="/settings" aria-label={t("nav.settings")}>
+              <Avatar name={displayName} size="sm" />
+            </Link>
+          </div>
         </header>
         <main>
           <Outlet />
@@ -160,7 +179,7 @@ export function AppShell() {
               }
             >
               <item.icon className="size-5" />
-              {item.label}
+              {t(item.labelKey)}
             </NavLink>
           ))}
         </div>

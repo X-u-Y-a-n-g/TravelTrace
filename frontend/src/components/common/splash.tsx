@@ -1,8 +1,10 @@
 import { Loader2 } from "lucide-react";
 
 import { LogoMark } from "@/components/common/logo";
+import { useI18n } from "@/i18n";
 
-export function Splash({ message = "Reconstructing your journeys" }: { message?: string }) {
+export function Splash({ message }: { message?: string }) {
+  const { t } = useI18n();
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-background">
       <div className="relative">
@@ -11,7 +13,7 @@ export function Splash({ message = "Reconstructing your journeys" }: { message?:
       </div>
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Loader2 className="size-4 animate-spin" />
-        {message}…
+        {message ?? t("splash.loading")}
       </div>
     </div>
   );

@@ -8,9 +8,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { formatDateRange } from "@/lib/format";
+import { useI18n } from "@/i18n";
 import { photoUrl } from "@/lib/api";
-import type { Trip } from "@/lib/types";
+import type { Trip, Visibility } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const COVER_GRADIENTS = [
@@ -20,6 +20,12 @@ const COVER_GRADIENTS = [
   ["#4a2f3d", "#8c4f5e", "#e8dcc4"],
   ["#2f4020", "#6f8c4f", "#e8dcc4"],
 ] as const;
+
+const VISIBILITY_KEYS: Record<Visibility, "visibility.private" | "visibility.unlisted" | "visibility.public"> = {
+  private: "visibility.private",
+  unlisted: "visibility.unlisted",
+  public: "visibility.public",
+};
 
 function gradientFor(seed: string): readonly [string, string, string] {
   let hash = 0;
@@ -91,6 +97,7 @@ export function TripCard({
   onDelete?: (trip: Trip) => void;
   className?: string;
 }) {
+  const { t, f } = useI18n();
   const hasActions = Boolean(onEdit || onDelete);
   return (
     <article
@@ -105,15 +112,11 @@ export function TripCard({
             variant={trip.visibility === "public" ? "ember" : "outline"}
             className="absolute left-4 top-4 border-white/25 bg-pine-950/45 text-white backdrop-blur"
           >
-            {trip.visibility === "private"
-              ? "Private"
-              : trip.visibility === "unlisted"
-                ? "Unlisted"
-                : "Public"}
+            {t(VISIBILITY_KEYS[trip.visibility])}
           </Badge>
           <div className="absolute inset-x-0 bottom-0 p-5">
             <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-sand-100/80">
-              {formatDateRange(trip.start_date, trip.end_date)}
+              {f.dateRange(trip.start_date, trip.end_date)}
             </p>
             <h3 className="mt-1 line-clamp-2 font-display text-2xl font-semibold leading-tight text-white">
               {trip.title}
@@ -123,15 +126,15 @@ export function TripCard({
       </Link>
       <div className="flex items-center justify-between gap-2 px-4 py-3">
         <p className="text-xs text-muted-foreground">
-          {trip.photo_count} photo{trip.photo_count === 1 ? "" : "s"} · {trip.place_count} place
-          {trip.place_count === 1 ? "" : "s"}
+          {t("common.photoCount", { count: trip.photo_count })} ·{" "}
+          {t("common.placeCount", { count: trip.place_count })}
         </p>
         {hasActions && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                aria-label={`Actions for ${trip.title}`}
+                aria-label={t("trip.actions")}
               >
                 <MoreHorizontal className="size-4" />
               </button>
@@ -140,13 +143,13 @@ export function TripCard({
               {onEdit && (
                 <DropdownMenuItem onSelect={() => onEdit(trip)}>
                   <Pencil className="size-4" />
-                  Edit trip
+                  {t("tripForm.editTitle")}
                 </DropdownMenuItem>
               )}
               {onDelete && (
                 <DropdownMenuItem destructive onSelect={() => onDelete(trip)}>
                   <Trash2 className="size-4" />
-                  Delete trip
+                  {t("trip.deleteAction")}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>

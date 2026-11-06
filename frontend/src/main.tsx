@@ -6,6 +6,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import { App } from "./app";
+import { I18nProvider } from "./i18n";
 import { Providers } from "./providers";
 
 const root = document.getElementById("root");
@@ -16,7 +17,9 @@ if (!root) {
 ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <Providers>
-      <App />
+      <I18nProvider>
+        <App />
+      </I18nProvider>
     </Providers>
   </React.StrictMode>,
 );

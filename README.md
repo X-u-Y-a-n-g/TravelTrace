@@ -6,7 +6,7 @@
 
   <p>
     <a href="https://github.com/X-u-Y-a-n-g/TravelTrace/actions/workflows/ci.yml"><img src="https://github.com/X-u-Y-a-n-g/TravelTrace/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-    <img src="https://img.shields.io/badge/version-0.1.0-1f3d33" alt="Version 0.1.0" />
+    <img src="https://img.shields.io/badge/version-0.1.1-1f3d33" alt="Version 0.1.1" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-c9a873" alt="MIT License" /></a>
     <img src="https://img.shields.io/badge/python-3.10%2B-366150" alt="Python 3.10+" />
     <img src="https://img.shields.io/badge/react-18-2c4e42" alt="React 18" />
@@ -22,7 +22,7 @@
   </p>
 </div>
 
-![TravelTrace dashboard](docs/screenshots/02-dashboard.png)
+![TravelTrace dashboard](docs/screenshots/en/02-dashboard.png)
 
 TravelTrace is built for the thousands of photos sitting on your phone after a trip. Instead of
 becoming another camera roll, they become a **journey**: every photo is placed back on the map using
@@ -41,7 +41,7 @@ enable an external geocoding provider. No accounts on someone else's cloud, no a
 | **Local-first** | PostgreSQL/PostGIS, local storage and open formats. Everything can be exported as a ZIP. |
 | **Honest automation** | The system proposes; you decide. Automatic drafts never overwrite your manual edits. |
 
-## Features in v0.1.0
+## Features in v0.1.1
 
 - **Trips** — create, edit, archive, restore, cover photo, visibility (private / unlisted / public).
 - **Photo import** — batch upload, SHA-256 deduplication, EXIF capture time, GPS, camera, lens, orientation, previews and thumbnails without metadata.
@@ -52,21 +52,22 @@ enable an external geocoding provider. No accounts on someone else's cloud, no a
 - **Dashboard** — journeys, countries, cities, places, photos, days on the road, storage usage, yearly rhythm, recent frames.
 - **Portable export** — one ZIP per trip containing `trip.json`, `timeline.json`, `places.geojson`, `photos.json`, `manifest.json` and the original photos.
 - **Deployment** — Docker Compose with PostGIS, Redis, a Celery worker, nginx and automatic migrations.
+- **Bilingual interface** — complete Chinese and English UI with a persistent language switcher; Chinese is the default.
 - **Privacy by default** — authenticated image files, private trips, no third-party calls unless you enable geocoding.
 
 ## Screenshots
 
 | Dashboard | Travel map |
 | --- | --- |
-| ![Dashboard](docs/screenshots/02-dashboard.png) | ![Map](docs/screenshots/06-map.png) |
+| ![Dashboard](docs/screenshots/en/02-dashboard.png) | ![Map](docs/screenshots/en/06-map.png) |
 
 | Trip detail | Timeline |
 | --- | --- |
-| ![Trip detail](docs/screenshots/04-trip-detail.png) | ![Timeline](docs/screenshots/05-timeline.png) |
+| ![Trip detail](docs/screenshots/en/04-trip-detail.png) | ![Timeline](docs/screenshots/en/05-timeline.png) |
 
 | Photo library | Sign in |
 | --- | --- |
-| ![Photos](docs/screenshots/07-photos.png) | ![Login](docs/screenshots/01-login.png) |
+| ![Photos](docs/screenshots/en/07-photos.png) | ![Login](docs/screenshots/en/01-login.png) |
 
 ## Quick start
 
@@ -265,7 +266,7 @@ TravelTrace/
 - **v1.0.0 — Intelligent Travel Platform** — optional AI summaries, personalised recommendations,
   multi-device sync, collaboration and plugin data sources.
 
-The v0.1.0 goal is intentionally narrow: make the loop **upload → map → timeline → edit → export**
+The v0.1.1 goal is intentionally narrow: make the loop **upload → map → timeline → edit → export**
 complete, stable and pleasant. AI and social features are not part of this release.
 
 ## Privacy and security

@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { forwardRef } from "react";
 
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 
 export const Dialog = DialogPrimitive.Root;
 export const DialogTrigger = DialogPrimitive.Trigger;
@@ -42,7 +43,7 @@ export const DialogContent = forwardRef<
       {!hideClose && (
         <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <X className="size-4" />
-          <span className="sr-only">Close</span>
+          <CloseLabel />
         </DialogPrimitive.Close>
       )}
     </DialogPrimitive.Content>
@@ -85,4 +86,9 @@ export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLD
       {...props}
     />
   );
+}
+
+function CloseLabel() {
+  const { t } = useI18n();
+  return <span className="sr-only">{t("common.close")}</span>;
 }

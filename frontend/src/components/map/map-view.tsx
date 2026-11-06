@@ -2,6 +2,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 
+import { useI18n } from "@/i18n";
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, MAP_STYLE_URL } from "@/lib/constants";
 import type { MapMarker, MapRoutes } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,7 @@ export function MapView({
   onMapClick,
   selectedId,
 }: MapViewProps) {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef(new Map<string, MapMarker>());
@@ -299,8 +301,7 @@ export function MapView({
       <div ref={containerRef} className="h-full w-full" />
       {failed && (
         <div className="pointer-events-none absolute inset-x-4 bottom-4 rounded-xl border border-border bg-card/95 px-4 py-3 text-xs text-muted-foreground shadow-soft">
-          The map tiles could not be reached. Your data is safe — check your connection or map
-          provider configuration.
+          {t("map.tilesError")}
         </div>
       )}
     </div>

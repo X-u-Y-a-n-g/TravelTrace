@@ -1,8 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Component, type ErrorInfo, type ReactNode } from "react";
 
 import { LogoMark } from "@/components/common/logo";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -22,25 +24,28 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBound
 
   render(): ReactNode {
     if (!this.state.hasError) return this.props.children;
-
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-6 text-center">
-        <LogoMark className="size-14 rounded-2xl shadow-soft" />
-        <div className="space-y-2">
-          <div className="mx-auto flex size-10 items-center justify-center rounded-xl bg-red-50 text-destructive">
-            <AlertTriangle className="size-5" />
-          </div>
-          <h1 className="text-balance text-3xl">Something went off the trail.</h1>
-          <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-            The interface hit an unexpected error. Your data is safe on the server. Reloading usually
-            fixes it; if not, check the browser console for details.
-          </p>
-        </div>
-        <Button onClick={() => window.location.reload()}>
-          <RefreshCw className="size-4" />
-          Reload TravelTrace
-        </Button>
-      </div>
-    );
+    return <ErrorFallback />;
   }
+}
+
+function ErrorFallback() {
+  const { t } = useI18n();
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-6 text-center">
+      <LogoMark className="size-14 rounded-2xl shadow-soft" />
+      <div className="space-y-2">
+        <div className="mx-auto flex size-10 items-center justify-center rounded-xl bg-red-50 text-destructive">
+          <AlertTriangle className="size-5" />
+        </div>
+        <h1 className="text-balance text-3xl">{t("error.uiTitle")}</h1>
+        <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+          {t("error.uiDescription")}
+        </p>
+      </div>
+      <Button onClick={() => window.location.reload()}>
+        <RefreshCw className="size-4" />
+        {t("error.reload")}
+      </Button>
+    </div>
+  );
 }

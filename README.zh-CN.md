@@ -1,12 +1,12 @@
 <div align="center">
   <img src="frontend/public/favicon.svg" width="72" alt="TravelTrace" />
   <h1>TravelTrace</h1>
-  <p><strong>Your journey, reconstructed.</strong></p>
+  <p><strong>你的旅程，重新展开。</strong></p>
   <p>以地图为核心、照片为线索、时间线为载体的自托管旅行记忆系统。</p>
 
   <p>
     <a href="https://github.com/X-u-Y-a-n-g/TravelTrace/actions/workflows/ci.yml"><img src="https://github.com/X-u-Y-a-n-g/TravelTrace/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-    <img src="https://img.shields.io/badge/version-0.1.0-1f3d33" alt="v0.1.0" />
+    <img src="https://img.shields.io/badge/version-0.1.1-1f3d33" alt="v0.1.1" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-c9a873" alt="MIT" /></a>
     <img src="https://img.shields.io/badge/python-3.10%2B-366150" alt="Python 3.10+" />
     <img src="https://img.shields.io/badge/react-18-2c4e42" alt="React 18" />
@@ -21,7 +21,7 @@
   </p>
 </div>
 
-![TravelTrace 仪表盘](docs/screenshots/02-dashboard.png)
+![TravelTrace 仪表盘](docs/screenshots/zh/02-dashboard.png)
 
 旅行结束后，手机里往往留下成百上千张照片。TravelTrace 让它们不再只是相册：读取照片中的 EXIF
 拍摄时间与 GPS，把照片放回地图、按时间组织成旅行事件，并连接到你真正到访过的地点。
@@ -41,21 +41,22 @@
 - **开放导出**：每次旅行导出 ZIP，包含 `trip.json`、`timeline.json`、`places.geojson`、
   `photos.json`、`manifest.json` 与原图。
 - **一键部署**：Docker Compose（PostGIS + Redis + Celery worker + nginx），自动执行数据库迁移。
+- **中英双语**：完整中文 / 英文界面，默认中文，登录页、侧边栏和设置中均可切换，选择会被记住。
 - **隐私优先**：默认私有、原图鉴权访问、默认不调用任何第三方服务。
 
 ## 截图
 
 | 仪表盘 | 地图 |
 | --- | --- |
-| ![仪表盘](docs/screenshots/02-dashboard.png) | ![地图](docs/screenshots/06-map.png) |
+| ![仪表盘](docs/screenshots/zh/02-dashboard.png) | ![地图](docs/screenshots/zh/06-map.png) |
 
 | 旅行详情 | 时间线 |
 | --- | --- |
-| ![旅行详情](docs/screenshots/04-trip-detail.png) | ![时间线](docs/screenshots/05-timeline.png) |
+| ![旅行详情](docs/screenshots/zh/04-trip-detail.png) | ![时间线](docs/screenshots/zh/05-timeline.png) |
 
 | 照片库 | 登录 |
 | --- | --- |
-| ![照片库](docs/screenshots/07-photos.png) | ![登录](docs/screenshots/01-login.png) |
+| ![照片库](docs/screenshots/zh/07-photos.png) | ![登录](docs/screenshots/zh/01-login.png) |
 
 ## 快速开始
 
@@ -168,6 +169,7 @@ Playwright 端到端测试以及 Docker 镜像构建。
 - 旅行默认私有，可见性由用户逐项选择。
 - 原图只对已认证的所有者开放；缩略图与预览图会移除 EXIF。
 - 反向地理编码默认关闭，导入照片时不会调用任何外部服务。
+- 完整的中文 / 英文界面，默认中文，可在登录页、侧边栏和设置中随时切换。
 - 导入任务按用户隔离，去重也只在同一账号内进行。
 - 所有旅行都可导出为开放格式，不锁定数据。
 
@@ -181,7 +183,7 @@ Playwright 端到端测试以及 Docker 镜像构建。
 - **v0.3.0 — Memory Experience**：旅行日志、回忆册、HTML / PDF 导出、分享页面、旅行统计。
 - **v1.0.0 — Intelligent Travel Platform**：AI 摘要、个性化推荐、多设备同步、多人协作、插件数据源。
 
-v0.1.0 有意保持聚焦：先把 **上传 → 地图 → 时间线 → 编辑 → 导出** 这条闭环做完整、稳定、好用。
+v0.1.1 有意保持聚焦：先把 **上传 → 地图 → 时间线 → 编辑 → 导出** 这条闭环做完整、稳定、好用。
 
 ## 贡献
 

@@ -6,6 +6,12 @@ function uniqueSuffix(): string {
   return `${Date.now()}${Math.floor(Math.random() * 1000)}`;
 }
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("traveltrace-language", "en");
+  });
+});
+
 test("register, create a trip, import a photo and open the timeline", async ({ page }) => {
   const suffix = uniqueSuffix();
   const username = `e2e${suffix}`;
@@ -40,7 +46,7 @@ test("register, create a trip, import a photo and open the timeline", async ({ p
   await fileInput.setInputFiles(path.join(process.cwd(), "e2e", "fixtures", "sample.jpg"));
   await page.getByRole("button", { name: /Import 1 photo/ }).click();
 
-  await expect(page.getByText(/Imported 1 photo/).first()).toBeVisible({ timeout: 45_000 });
+  await expect(page.getByText(/Photos imported/).first()).toBeVisible({ timeout: 45_000 });
 
   await page.getByRole("tab", { name: "Photos" }).click();
   await expect(page.locator('img[src*="/photos/"]').first()).toBeVisible();

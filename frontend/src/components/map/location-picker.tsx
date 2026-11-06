@@ -2,6 +2,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef } from "react";
 
+import { useI18n } from "@/i18n";
 import { MAP_STYLE_URL } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,7 @@ export function LocationPicker({
   onChange: (latitude: number, longitude: number) => void;
   className?: string;
 }) {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
@@ -91,7 +93,7 @@ export function LocationPicker({
     >
       <div ref={containerRef} className="h-full w-full" />
       <span className="pointer-events-none absolute bottom-2 left-2 rounded-lg bg-card/90 px-2 py-1 text-[10px] text-muted-foreground shadow-sm">
-        Click the map to set a precise location
+        {t("photo.mapHint")}
       </span>
     </div>
   );

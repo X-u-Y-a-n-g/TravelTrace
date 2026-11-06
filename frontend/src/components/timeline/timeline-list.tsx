@@ -17,8 +17,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EVENT_TYPE_ICONS } from "@/lib/constants";
-import { formatDate, formatTime } from "@/lib/format";
+import { useI18n } from "@/i18n";
+import { EVENT_TYPE_ICONS, EVENT_TYPE_LABEL_KEYS } from "@/lib/constants";
 import { photoUrl } from "@/lib/api";
 import type { Timeline, TimelineEvent } from "@/lib/types";
 
@@ -39,30 +39,33 @@ export function TimelineList({
   onAddEvent: (date: string) => void;
   confirmingId?: string | null;
 }) {
+  const { t, f } = useI18n();
   return (
     <div className="space-y-10">
       {timeline.days.map((day) => (
         <section key={day.date}>
           <div className="mb-5 flex flex-wrap items-center gap-3">
             <div className="flex size-12 shrink-0 flex-col items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-              <span className="text-[8px] uppercase tracking-[0.16em] opacity-70">Day</span>
+              <span className="text-[8px] uppercase tracking-[0.16em] opacity-70">
+                {t("timeline.day")}
+              </span>
               <span className="font-display text-lg font-semibold leading-none">{day.day_index}</span>
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                {formatDate(day.date, "EEEE")}
+                {f.weekday(day.date)}
               </p>
               <h3 className="font-display text-xl leading-tight">
-                {formatDate(day.date, "MMMM d, yyyy")}
+                {f.longDate(day.date)}
               </h3>
             </div>
             <div className="mx-2 hidden h-px flex-1 bg-border sm:block" />
             <span className="text-[11px] text-muted-foreground">
-              {day.events.length} event{day.events.length === 1 ? "" : "s"}
+              {t("common.eventCount", { count: day.events.length })}
             </span>
             <Button variant="ghost" size="sm" onClick={() => onAddEvent(day.date)}>
               <Plus className="size-3.5" />
-              Add
+              {t("timeline.addToDay")}
             </Button>
           </div>
 
@@ -87,19 +90,19 @@ export function TimelineList({
                             {event.status === "draft" && (
                               <Badge variant="sand" className="gap-1">
                                 <Sparkles className="size-2.5" />
-                                Draft
+                                {t("timeline.draft")}
                               </Badge>
                             )}
                             {event.source === "auto" && event.status !== "draft" && (
-                              <Badge variant="outline">Auto</Badge>
+                              <Badge variant="outline">{t("timeline.auto")}</Badge>
                             )}
                           </div>
                           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
                             <span className="inline-flex items-center gap-1">
                               <Clock className="size-3" />
-                              {formatTime(event.start_time)}
+                              {f.time(event.start_time)}
                               {event.end_time && event.end_time !== event.start_time
-                                ? ` – ${formatTime(event.end_time)}`
+                                ? ` – ${f.time(event.end_time)}`
                                 : ""}
                             </span>
                             {event.place && (
@@ -108,7 +111,7 @@ export function TimelineList({
                                 {event.place.name}
                               </span>
                             )}
-                            <span className="capitalize">{event.event_type}</span>
+                            <span>{t(EVENT_TYPE_LABEL_KEYS[event.event_type])}</span>
                           </div>
                           {event.description && (
                             <p className="mt-2 text-sm leading-relaxed text-foreground/75">
@@ -122,7 +125,7 @@ export function TimelineList({
                         <DropdownMenuTrigger asChild>
                           <button
                             className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                            aria-label={`Actions for ${event.title}`}
+                            aria-label={t("timeline.eventActions", { title: event.title })}
                           >
                             <MoreHorizontal className="size-4" />
                           </button>
@@ -130,11 +133,11 @@ export function TimelineList({
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onSelect={() => onEdit(event)}>
                             <Pencil className="size-4" />
-                            Edit event
+                            {t("timeline.editEvent")}
                           </DropdownMenuItem>
                           <DropdownMenuItem destructive onSelect={() => onDelete(event)}>
                             <Trash2 className="size-4" />
-                            Delete event
+                            {t("timeline.deleteEvent")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -148,7 +151,7 @@ export function TimelineList({
                             type="button"
                             onClick={() => onPhotoClick(photo.id)}
                             className="size-14 overflow-hidden rounded-xl bg-sand-200 ring-1 ring-black/5 transition-transform hover:scale-[1.03]"
-                            aria-label="Open photo"
+                            aria-label={t("photo.openPhoto")}
                           >
                             <img
                               src={photoUrl(photo.id, "thumb")}
@@ -169,7 +172,7 @@ export function TimelineList({
                     {event.status === "draft" && (
                       <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-sand-50 px-3 py-2">
                         <p className="text-[11px] text-sand-800/80">
-                          TravelTrace grouped these photos automatically.
+                          {t("timeline.draftHint")}
                         </p>
                         <Button
                           size="sm"
@@ -179,7 +182,7 @@ export function TimelineList({
                           onClick={() => onConfirm(event)}
                         >
                           <Check className="size-3" />
-                          Looks right
+                          {t("timeline.looksRight")}
                         </Button>
                       </div>
                     )}

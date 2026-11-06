@@ -11,6 +11,26 @@ All notable changes to TravelTrace are documented here. The format follows
 - GPX / GeoJSON / KML import and track-to-photo matching (v0.2.0).
 - Journals, memory books and HTML/PDF export (v0.3.0).
 
+## [0.1.1] — 2026-11-06
+
+A bilingual patch release: the whole interface is now available in Chinese and English, with Chinese
+as the default.
+
+### Added
+
+- **Chinese and English UI** — every page, dialog, empty state, validation message and toast has been
+  translated. Dates, date ranges and weekday labels follow the selected locale.
+- **Language switcher** — available on the login page, in the sidebar, in the mobile header and on the
+  Settings page. The choice is stored in the browser and survives reloads.
+- **Bilingual screenshots** — README images are captured in both languages under
+  `docs/screenshots/zh` and `docs/screenshots/en`.
+
+### Changed
+
+- Chinese is the default language for first-time visitors, regardless of browser locale.
+- Version bumped to `0.1.1` across the backend, frontend, OpenAPI document and documentation.
+- E2E coverage now verifies the Chinese default, the language switch and persistence.
+
 ## [0.1.0] — 2026-11-05
 
 The first public MVP: upload photos, reconstruct the map and timeline, edit the results, export

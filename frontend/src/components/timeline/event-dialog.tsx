@@ -16,7 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ApiError, api, photoUrl } from "@/lib/api";
+import { useI18n } from "@/i18n";
+import { api, photoUrl } from "@/lib/api";
 import { EVENT_TYPES } from "@/lib/constants";
 import { dateInputValue, timeInputValue } from "@/lib/format";
 import type {
@@ -46,6 +47,7 @@ export function EventDialog({
   defaultDate?: string | null;
   onSaved?: () => void;
 }) {
+  const { t, errorText } = useI18n();
   const queryClient = useQueryClient();
   const editing = Boolean(event);
   const [title, setTitle] = useState("");
@@ -88,14 +90,14 @@ export function EventDialog({
       return api.timeline.createEvent(tripId, payload);
     },
     onSuccess: () => {
-      toast.success(editing ? "Event updated" : "Event added to the timeline");
+      toast.success(editing ? t("eventDialog.successEdit") : t("eventDialog.successAdd"));
       queryClient.invalidateQueries({ queryKey: ["trips", tripId, "timeline"] });
       queryClient.invalidateQueries({ queryKey: ["trips", tripId] });
       onSaved?.();
       onOpenChange(false);
     },
     onError: (mutationError) => {
-      setError(mutationError instanceof ApiError ? mutationError.message : "Could not save the event");
+      setError(errorText(mutationError) || t("eventDialog.saveError"));
     },
   });
 
@@ -112,21 +114,20 @@ export function EventDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{editing ? "Edit timeline event" : "Add a timeline event"}</DialogTitle>
+          <DialogTitle>{editing ? t("eventDialog.editTitle") : t("eventDialog.createTitle")}</DialogTitle>
           <DialogDescription>
-            Events group photos into moments. Auto-generated drafts are suggestions — confirm or
-            rewrite them freely.
+            {t("eventDialog.description")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="event-title">Title</Label>
+            <Label htmlFor="event-title">{t("eventDialog.title")}</Label>
             <Input
               id="event-title"
               value={title}
               onChange={(changeEvent) => setTitle(changeEvent.target.value)}
-              placeholder="Sunrise at Kiyomizu-dera"
+              placeholder={t("eventDialog.titlePlaceholder")}
               autoFocus
               maxLength={200}
             />
@@ -134,7 +135,7 @@ export function EventDialog({
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-1.5">
-              <Label htmlFor="event-date">Day</Label>
+              <Label htmlFor="event-date">{t("eventDialog.day")}</Label>
               <Input
                 id="event-date"
                 type="date"
@@ -143,7 +144,7 @@ export function EventDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="event-start">Start</Label>
+              <Label htmlFor="event-start">{t("eventDialog.start")}</Label>
               <Input
                 id="event-start"
                 type="time"
@@ -152,7 +153,7 @@ export function EventDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="event-end">End (optional)</Label>
+              <Label htmlFor="event-end">{t("eventDialog.end")}</Label>
               <Input
                 id="event-end"
                 type="time"
@@ -164,7 +165,7 @@ export function EventDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="event-type">Type</Label>
+              <Label htmlFor="event-type">{t("eventDialog.type")}</Label>
               <Select
                 id="event-type"
                 value={eventType}
@@ -172,19 +173,19 @@ export function EventDialog({
               >
                 {EVENT_TYPES.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {t(option.labelKey)}
                   </option>
                 ))}
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="event-place">Place</Label>
+              <Label htmlFor="event-place">{t("eventDialog.place")}</Label>
               <Select
                 id="event-place"
                 value={placeId}
                 onChange={(changeEvent) => setPlaceId(changeEvent.target.value)}
               >
-                <option value="">No specific place</option>
+                <option value="">{t("eventDialog.noPlace")}</option>
                 {places.map((visit) => (
                   <option key={visit.place.id} value={visit.place.id}>
                     {visit.place.name}
@@ -195,12 +196,12 @@ export function EventDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="event-description">Notes</Label>
+            <Label htmlFor="event-description">{t("eventDialog.notes")}</Label>
             <Textarea
               id="event-description"
               value={description}
               onChange={(changeEvent) => setDescription(changeEvent.target.value)}
-              placeholder="What happened here?"
+              placeholder={t("eventDialog.notesPlaceholder")}
               rows={2}
               maxLength={5000}
             />
@@ -209,8 +210,8 @@ export function EventDialog({
           {sortedPhotos.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Photos in this event</Label>
-                <span className="text-[11px] text-muted-foreground">{photoIds.length} selected</span>
+                <Label>{t("eventDialog.photos")}</Label>
+                <span className="text-[11px] text-muted-foreground">{t("eventDialog.selected", { count: photoIds.length })}</span>
               </div>
               <div className="grid max-h-44 grid-cols-6 gap-1.5 overflow-y-auto rounded-xl bg-secondary/40 p-2 sm:grid-cols-8">
                 {sortedPhotos.map((photo) => {
@@ -258,11 +259,11 @@ export function EventDialog({
 
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={mutation.isPending}>
-              Cancel
+              {t("eventDialog.cancel")}
             </Button>
             <Button type="submit" disabled={!canSubmit || mutation.isPending}>
               {mutation.isPending && <Loader2 className="size-4 animate-spin" />}
-              {editing ? "Save event" : "Add event"}
+              {editing ? t("eventDialog.save") : t("eventDialog.add")}
             </Button>
           </DialogFooter>
         </form>

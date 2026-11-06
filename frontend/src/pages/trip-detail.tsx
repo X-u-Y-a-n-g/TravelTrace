@@ -42,14 +42,9 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ApiError, api, tripExportUrl } from "@/lib/api";
+import { useI18n } from "@/i18n";
+import { api, tripExportUrl } from "@/lib/api";
 import { EVENT_TYPE_ICONS, PLACE_CATEGORY_COLORS, PLACE_CATEGORY_ICONS } from "@/lib/constants";
-import {
-  formatDate,
-  formatDateRange,
-  formatDateTime,
-  formatTime,
-} from "@/lib/format";
 import { useMarkers, usePhotos, useRoutes, useTimeline, useTrip } from "@/lib/queries";
 import type { MapMarker, TimelineEvent, TripPlace } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -57,6 +52,7 @@ import { cn } from "@/lib/utils";
 type TabValue = "overview" | "timeline" | "places" | "photos";
 
 export function TripDetailPage() {
+  const { t, f, errorText } = useI18n();
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -102,21 +98,20 @@ export function TripDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["trips", tripId, "timeline"] });
       queryClient.invalidateQueries({ queryKey: ["trips", tripId] });
       if (result.created_events) {
-        toast.success(
-          `${result.created_events} draft event${result.created_events === 1 ? "" : "s"} created`,
-          {
-            description: `${result.assigned_photos} photo${result.assigned_photos === 1 ? "" : "s"} organised into moments you can edit.`,
-          },
-        );
+        toast.success(t("trip.generateCreated", { count: result.created_events }), {
+          description: t("trip.generateCreatedDescription", {
+            count: result.assigned_photos,
+          }),
+        });
         setTab("timeline");
       } else {
-        toast.info("No photos to organise yet", {
-          description: "Photos need a capture date. Import originals with EXIF, or add an event by hand.",
+        toast.info(t("trip.noPhotosToast"), {
+          description: t("trip.noPhotosToastDescription"),
         });
       }
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : "Could not generate the timeline");
+      toast.error(errorText(error));
     },
   });
 
@@ -125,10 +120,10 @@ export function TripDetailPage() {
       api.timeline.updateEvent(tripId as string, event.id, { status: "confirmed" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["trips", tripId, "timeline"] });
-      toast.success("Event confirmed");
+      toast.success(t("trip.eventConfirmed"));
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : "Could not confirm the event");
+      toast.error(errorText(error));
     },
   });
 
@@ -138,11 +133,11 @@ export function TripDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["trips", tripId, "timeline"] });
       queryClient.invalidateQueries({ queryKey: ["trips", tripId] });
-      toast.success("Event removed");
+      toast.success(t("trip.eventRemoved"));
       setPendingEvent(null);
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : "Could not delete the event");
+      toast.error(errorText(error));
     },
   });
 
@@ -154,18 +149,18 @@ export function TripDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["trips"] });
       queryClient.invalidateQueries({ queryKey: ["map"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
-      toast.success("Place removed from the trip");
+      toast.success(t("trip.placeRemoved"));
       setPendingVisit(null);
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : "Could not remove the place");
+      toast.error(errorText(error));
     },
   });
 
   const deleteTrip = useMutation({
     mutationFn: () => api.trips.remove(tripId as string),
     onSuccess: () => {
-      toast.success("Trip moved to the archive");
+      toast.success(t("trip.tripArchived"));
       queryClient.invalidateQueries({ queryKey: ["trips"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
       queryClient.invalidateQueries({ queryKey: ["photos"] });
@@ -173,7 +168,7 @@ export function TripDetailPage() {
       navigate("/trips", { replace: true });
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : "Could not delete the trip");
+      toast.error(errorText(error));
     },
   });
 
@@ -187,8 +182,8 @@ export function TripDetailPage() {
     return (
       <div className="page-shell">
         <ErrorState
-          title="This journey could not be opened"
-          message="It may have been deleted, or the link is no longer valid."
+          title={t("error.load")}
+          message={t("error.description")}
           onRetry={() => tripQuery.refetch()}
         />
       </div>
@@ -224,7 +219,7 @@ export function TripDetailPage() {
         className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="size-3.5" />
-        All trips
+        {t("trip.backAll")}
       </Link>
 
       <div className="overflow-hidden rounded-[2rem] border border-border/80 bg-card/70 shadow-soft">
@@ -235,16 +230,16 @@ export function TripDetailPage() {
               className="border-white/25 bg-pine-950/45 text-white backdrop-blur"
             >
               {trip.visibility === "private"
-                ? "Private journey"
+                ? t("trip.privateJourney")
                 : trip.visibility === "unlisted"
-                  ? "Unlisted journey"
-                  : "Public journey"}
+                  ? t("trip.unlistedJourney")
+                  : t("trip.publicJourney")}
             </Badge>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   className="rounded-full border border-white/20 bg-white/10 p-2 text-white backdrop-blur transition-colors hover:bg-white/20"
-                  aria-label="Trip actions"
+                  aria-label={t("trip.actions")}
                 >
                   <MoreHorizontal className="size-4" />
                 </button>
@@ -252,18 +247,18 @@ export function TripDetailPage() {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onSelect={() => setEditTripOpen(true)}>
                   <Pencil className="size-4" />
-                  Edit trip details
+                  {t("trip.editDetails")}
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href={tripExportUrl(trip.id)} download>
                     <Download className="size-4" />
-                    Export as ZIP
+                    {t("trip.exportZip")}
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem destructive onSelect={() => setDeleteTripOpen(true)}>
                   <Trash2 className="size-4" />
-                  Delete trip
+                  {t("trip.deleteAction")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -273,7 +268,7 @@ export function TripDetailPage() {
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div className="max-w-2xl">
                 <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-sand-100/75">
-                  {formatDateRange(trip.start_date, trip.end_date)}
+                  {f.dateRange(trip.start_date, trip.end_date)}
                   {countries.length ? ` · ${countries.join(" · ")}` : ""}
                 </p>
                 <h1 className="mt-2 text-balance font-display text-3xl font-semibold leading-[1.02] text-white sm:text-5xl">
@@ -291,7 +286,7 @@ export function TripDetailPage() {
                   onClick={() => setUploadOpen(true)}
                 >
                   <Upload className="size-4" />
-                  Add photos
+                  {t("trip.addPhotos")}
                 </Button>
                 <Button
                   variant="outline"
@@ -299,7 +294,7 @@ export function TripDetailPage() {
                   onClick={() => setEditTripOpen(true)}
                 >
                   <Pencil className="size-4" />
-                  Edit
+                  {t("trip.edit")}
                 </Button>
               </div>
             </div>
@@ -308,19 +303,19 @@ export function TripDetailPage() {
 
         <div className="grid grid-cols-2 divide-x divide-y divide-border/70 border-t border-border/70 sm:grid-cols-4 sm:divide-y-0">
           <div className="px-5 py-4">
-            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Photos</p>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{t("trip.statsPhotos")}</p>
             <p className="mt-1 font-display text-2xl font-semibold">{stats.photo_count}</p>
           </div>
           <div className="px-5 py-4">
-            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Places</p>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{t("trip.statsPlaces")}</p>
             <p className="mt-1 font-display text-2xl font-semibold">{stats.place_count}</p>
           </div>
           <div className="px-5 py-4">
-            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Days</p>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{t("trip.statsDays")}</p>
             <p className="mt-1 font-display text-2xl font-semibold">{trip.day_count}</p>
           </div>
           <div className="px-5 py-4">
-            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Geotagged</p>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{t("trip.statsGeotagged")}</p>
             <p className="mt-1 font-display text-2xl font-semibold">
               {stats.gps_photo_count}
               <span className="ml-1 text-xs font-normal text-muted-foreground">
@@ -334,17 +329,17 @@ export function TripDetailPage() {
       <Tabs value={tab} onValueChange={setTab} className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="overview">{t("trip.tabOverview")}</TabsTrigger>
             <TabsTrigger value="timeline">
-              Timeline
+              {t("trip.tabTimeline")}
               {timeline?.event_count ? (
                 <span className="ml-1 rounded-full bg-black/10 px-1.5 text-[10px]">
                   {timeline.event_count}
                 </span>
               ) : null}
             </TabsTrigger>
-            <TabsTrigger value="places">Places</TabsTrigger>
-            <TabsTrigger value="photos">Photos</TabsTrigger>
+            <TabsTrigger value="places">{t("trip.tabPlaces")}</TabsTrigger>
+            <TabsTrigger value="photos">{t("trip.tabPhotos")}</TabsTrigger>
           </TabsList>
 
           {tab === "timeline" && (
@@ -355,24 +350,24 @@ export function TripDetailPage() {
                 disabled={generateTimeline.isPending || stats.photo_count === 0}
               >
                 <Sparkles className="size-4" />
-                {generateTimeline.isPending ? "Reconstructing…" : "Generate drafts"}
+                {generateTimeline.isPending ? t("trip.reconstructing") : t("trip.generateDrafts")}
               </Button>
               <Button onClick={() => openNewEvent()}>
                 <Plus className="size-4" />
-                Add event
+                {t("trip.addEvent")}
               </Button>
             </div>
           )}
           {tab === "places" && (
             <Button onClick={() => setPlaceDialogOpen(true)}>
               <Plus className="size-4" />
-              Add place
+              {t("trip.addPlace")}
             </Button>
           )}
           {tab === "photos" && (
             <Button variant="outline" onClick={() => setUploadOpen(true)}>
               <Upload className="size-4" />
-              Upload photos
+              {t("trip.uploadPhotos")}
             </Button>
           )}
         </div>
@@ -382,11 +377,11 @@ export function TripDetailPage() {
             <section className="surface overflow-hidden">
               <div className="flex items-center justify-between gap-3 px-5 py-4">
                 <div>
-                  <p className="eyebrow">Route</p>
-                  <h2 className="font-display text-2xl">The journey on the map</h2>
+                  <p className="eyebrow">{t("trip.route")}</p>
+                  <h2 className="font-display text-2xl">{t("trip.journeyOnMap")}</h2>
                 </div>
                 <Link to="/map" className={buttonVariants({ variant: "outline", size: "sm" })}>
-                  Open map
+                  {t("trip.openMap")}
                   <ArrowRight className="size-3.5" />
                 </Link>
               </div>
@@ -398,37 +393,37 @@ export function TripDetailPage() {
                 fitKey={`trip-${trip.id}`}
               />
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border/70 px-5 py-3 text-[11px] text-muted-foreground">
-                <span>{stats.photo_days} days with photos</span>
+                <span>{t("trip.photoDays", { count: stats.photo_days })}</span>
                 <span>·</span>
-                <span>{stats.place_count} places visited</span>
+                <span>{t("trip.placesVisited", { count: stats.place_count })}</span>
                 <span>·</span>
-                <span>{stats.favorite_count} favourites</span>
+                <span>{t("trip.favorites", { count: stats.favorite_count })}</span>
               </div>
             </section>
 
             <div className="space-y-4">
               <section className="surface p-5">
-                <p className="eyebrow">Field notes</p>
-                <h2 className="mt-1 font-display text-2xl">About this journey</h2>
+                <p className="eyebrow">{t("trip.fieldNotes")}</p>
+                <h2 className="mt-1 font-display text-2xl">{t("trip.about")}</h2>
                 <p className="mt-3 text-sm leading-relaxed text-foreground/80">
-                  {trip.description || "No description yet. Add a few words about the journey."}
+                  {trip.description || t("trip.noDescription")}
                 </p>
                 <dl className="mt-5 space-y-3 text-sm">
                   <div className="flex items-start justify-between gap-3">
-                    <dt className="text-muted-foreground">Dates</dt>
-                    <dd className="text-right font-medium">{formatDateRange(trip.start_date, trip.end_date)}</dd>
+                    <dt className="text-muted-foreground">{t("trip.dates")}</dt>
+                    <dd className="text-right font-medium">{f.dateRange(trip.start_date, trip.end_date)}</dd>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <dt className="text-muted-foreground">Cities</dt>
+                    <dt className="text-muted-foreground">{t("trip.cities")}</dt>
                     <dd className="text-right font-medium">{cities.length ? cities.join(", ") : "—"}</dd>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <dt className="text-muted-foreground">Countries</dt>
+                    <dt className="text-muted-foreground">{t("trip.countries")}</dt>
                     <dd className="text-right font-medium">{countries.length ? countries.join(", ") : "—"}</dd>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <dt className="text-muted-foreground">First photo</dt>
-                    <dd className="text-right font-medium">{formatDateTime(stats.first_photo_at)}</dd>
+                    <dt className="text-muted-foreground">{t("trip.firstPhoto")}</dt>
+                    <dd className="text-right font-medium">{f.dateTime(stats.first_photo_at)}</dd>
                   </div>
                 </dl>
               </section>
@@ -436,11 +431,11 @@ export function TripDetailPage() {
               <section className="surface p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="eyebrow">Timeline</p>
-                    <h2 className="mt-1 font-display text-2xl">Moments</h2>
+                    <p className="eyebrow">{t("trip.timeline")}</p>
+                    <h2 className="mt-1 font-display text-2xl">{t("trip.moments")}</h2>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setTab("timeline")}>
-                    Open
+                    {t("trip.open")}
                     <ArrowRight className="size-3.5" />
                   </Button>
                 </div>
@@ -460,7 +455,7 @@ export function TripDetailPage() {
                           <div className="min-w-0">
                             <p className="truncate text-sm font-medium">{event.title}</p>
                             <p className="text-[11px] text-muted-foreground">
-                              {formatDate(event.day, "MMM d")} · {formatTime(event.start_time)}
+                              {f.monthDay(event.day)} · {f.time(event.start_time)}
                             </p>
                           </div>
                         </li>
@@ -469,7 +464,7 @@ export function TripDetailPage() {
                 ) : (
                   <div className="mt-4 rounded-2xl border border-dashed border-border px-4 py-5 text-center">
                     <p className="text-xs text-muted-foreground">
-                      No events yet. Generate a draft timeline from your photo metadata.
+                      {t("trip.noEvents")}
                     </p>
                     <Button
                       variant="outline"
@@ -479,7 +474,7 @@ export function TripDetailPage() {
                       onClick={() => generateTimeline.mutate()}
                     >
                       <Sparkles className="size-3.5" />
-                      Generate drafts
+                      {t("trip.generateShort")}
                     </Button>
                   </div>
                 )}
@@ -490,11 +485,11 @@ export function TripDetailPage() {
           <section className="mt-6 surface p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="eyebrow">Frames</p>
-                <h2 className="mt-1 font-display text-2xl">Photos from this trip</h2>
+                <p className="eyebrow">{t("trip.frames")}</p>
+                <h2 className="mt-1 font-display text-2xl">{t("trip.photosFromTrip")}</h2>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setTab("photos")}>
-                View all
+                {t("trip.viewAll")}
                 <ArrowRight className="size-3.5" />
               </Button>
             </div>
@@ -513,11 +508,11 @@ export function TripDetailPage() {
               <div className="mt-4 flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border py-8 text-center">
                 <Images className="size-5 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground">
-                  Add photos to bring this journey to life.
+                  {t("trip.noPhotos")}
                 </p>
                 <Button variant="outline" size="sm" onClick={() => setUploadOpen(true)}>
                   <Upload className="size-3.5" />
-                  Upload photos
+                  {t("trip.upload")}
                 </Button>
               </div>
             )}
@@ -532,7 +527,11 @@ export function TripDetailPage() {
               ))}
             </div>
           ) : timelineQuery.isError ? (
-            <ErrorState onRetry={() => timelineQuery.refetch()} />
+            <ErrorState
+              title={t("error.load")}
+              message={t("error.description")}
+              onRetry={() => timelineQuery.refetch()}
+            />
           ) : timeline && timeline.days.length > 0 ? (
             <>
               <TimelineList
@@ -552,15 +551,15 @@ export function TripDetailPage() {
               <div className="mt-8 flex justify-center">
                 <Button variant="outline" onClick={() => openNewEvent()}>
                   <Plus className="size-4" />
-                  Add another moment
+                  {t("trip.addAnotherMoment")}
                 </Button>
               </div>
             </>
           ) : (
             <EmptyState
               icon={Sparkles}
-              title="No timeline yet"
-              description="Generate a draft from the time and place in your photos, then keep, confirm or rewrite each suggestion."
+              title={t("trip.timelineEmptyTitle")}
+              description={t("trip.timelineEmptyDescription")}
               action={
                 <div className="flex flex-wrap justify-center gap-2">
                   <Button
@@ -568,11 +567,11 @@ export function TripDetailPage() {
                     onClick={() => generateTimeline.mutate()}
                   >
                     <Sparkles className="size-4" />
-                    Generate draft timeline
+                    {t("trip.generateDraftTimeline")}
                   </Button>
                   <Button variant="outline" onClick={() => openNewEvent()}>
                     <Plus className="size-4" />
-                    Add an event
+                    {t("trip.addAnEvent")}
                   </Button>
                 </div>
               }
@@ -584,12 +583,12 @@ export function TripDetailPage() {
           {trip.places.length === 0 ? (
             <EmptyState
               icon={MapPin}
-              title="No places yet"
-              description="Add the places you visited to complete the map and give your photos a home."
+              title={t("trip.placesEmptyTitle")}
+              description={t("trip.placesEmptyDescription")}
               action={
                 <Button onClick={() => setPlaceDialogOpen(true)}>
                   <Plus className="size-4" />
-                  Add your first place
+                  {t("trip.addFirstPlace")}
                 </Button>
               }
             />
@@ -616,13 +615,13 @@ export function TripDetailPage() {
                           <h3 className="truncate font-medium">{visit.place.name}</h3>
                           <p className="text-[11px] text-muted-foreground">
                             {[visit.place.city, visit.place.country].filter(Boolean).join(", ") ||
-                              "No location details"}
+                              t("placeDialog.noLocation")}
                           </p>
                         </div>
                         <button
                           onClick={() => setPendingVisit(visit)}
                           className="rounded-full p-1.5 text-muted-foreground opacity-0 transition-all hover:bg-red-50 hover:text-destructive group-hover:opacity-100"
-                          aria-label={`Remove ${visit.place.name}`}
+                          aria-label={t("trip.removePlaceAria", { name: visit.place.name })}
                         >
                           <Trash2 className="size-3.5" />
                         </button>
@@ -631,7 +630,7 @@ export function TripDetailPage() {
                         {visit.arrival_time && (
                           <span className="inline-flex items-center gap-1">
                             <CalendarDays className="size-3" />
-                            {formatDateTime(visit.arrival_time)}
+                            {f.dateTime(visit.arrival_time)}
                           </span>
                         )}
                         {visit.place.latitude !== null && visit.place.longitude !== null && (
@@ -662,16 +661,20 @@ export function TripDetailPage() {
               ))}
             </div>
           ) : photosQuery.isError ? (
-            <ErrorState onRetry={() => photosQuery.refetch()} />
+            <ErrorState
+              title={t("error.load")}
+              message={t("error.description")}
+              onRetry={() => photosQuery.refetch()}
+            />
           ) : tripPhotos.length === 0 ? (
             <EmptyState
               icon={Camera}
-              title="No photos in this trip"
-              description="Import the photos you took. TravelTrace reads EXIF time and GPS to place them on the map."
+              title={t("trip.photosEmptyTitle")}
+              description={t("trip.photosEmptyDescription")}
               action={
                 <Button onClick={() => setUploadOpen(true)}>
                   <Upload className="size-4" />
-                  Upload photos
+                  {t("trip.photosEmptyAction")}
                 </Button>
               }
             />
@@ -691,7 +694,7 @@ export function TripDetailPage() {
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-pine-950/70 to-transparent p-3 opacity-0 transition-opacity group-hover:opacity-100">
                       <span className="truncate text-[10px] text-white/85">
-                        {formatDate(photo.taken_at, "MMM d, yyyy")}
+                        {f.date(photo.taken_at)}
                         {photo.place ? ` · ${photo.place.name}` : ""}
                       </span>
                       {photo.is_favorite && (
@@ -703,9 +706,12 @@ export function TripDetailPage() {
               </div>
               {photosQuery.data && photosQuery.data.total > tripPhotos.length && (
                 <p className="mt-5 text-center text-xs text-muted-foreground">
-                  Showing the first {tripPhotos.length} of {photosQuery.data.total} photos.{" "}
+                  {t("trip.showingFirst", {
+                    shown: tripPhotos.length,
+                    total: photosQuery.data.total,
+                  })}{" "}
                   <Link to={`/photos?trip_id=${trip.id}`} className="text-primary hover:underline">
-                    Open the full gallery
+                    {t("trip.fullGallery")}
                   </Link>
                 </p>
               )}
@@ -768,9 +774,10 @@ export function TripDetailPage() {
         onOpenChange={(open) => {
           if (!open) setPendingEvent(null);
         }}
-        title="Delete this event?"
-        description="The photos stay in your library. Only the timeline entry is removed."
-        confirmLabel="Delete event"
+        title={t("trip.deleteEventTitle")}
+        description={t("trip.deleteEventDescription")}
+        confirmLabel={t("trip.deleteEventConfirm")}
+        cancelLabel={t("common.cancel")}
         loading={deleteEvent.isPending}
         onConfirm={() => {
           if (pendingEvent) deleteEvent.mutate(pendingEvent);
@@ -782,9 +789,10 @@ export function TripDetailPage() {
         onOpenChange={(open) => {
           if (!open) setPendingVisit(null);
         }}
-        title="Remove this place?"
-        description="It will be removed from this trip and its route. The place remains in your saved places."
-        confirmLabel="Remove place"
+        title={t("trip.removePlaceTitle")}
+        description={t("trip.removePlaceDescription")}
+        confirmLabel={t("trip.removePlaceConfirm")}
+        cancelLabel={t("common.cancel")}
         loading={deleteVisit.isPending}
         onConfirm={() => {
           if (pendingVisit) deleteVisit.mutate(pendingVisit);
@@ -794,9 +802,10 @@ export function TripDetailPage() {
       <ConfirmDialog
         open={deleteTripOpen}
         onOpenChange={setDeleteTripOpen}
-        title="Delete this trip?"
-        description={`“${trip.title}” will be archived along with its timeline. Photos stay in your library but leave the map.`}
-        confirmLabel="Delete trip"
+        title={t("trip.deleteTripTitle")}
+        description={t("trip.deleteTripDescription", { title: trip.title })}
+        confirmLabel={t("trip.deleteTripConfirm")}
+        cancelLabel={t("common.cancel")}
         loading={deleteTrip.isPending}
         onConfirm={() => deleteTrip.mutate()}
       />

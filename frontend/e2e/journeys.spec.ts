@@ -6,6 +6,12 @@ function uniqueSuffix(): string {
   return `${Date.now()}${Math.floor(Math.random() * 1000)}`;
 }
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("traveltrace-language", "en");
+  });
+});
+
 test("places, manual events, photo editing and every page", async ({ page }) => {
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
@@ -58,7 +64,7 @@ test("places, manual events, photo editing and every page", async ({ page }) => 
     .locator('input[type="file"]')
     .setInputFiles(path.join(process.cwd(), "e2e", "fixtures", "sample.jpg"));
   await page.getByRole("button", { name: /Import 1 photo/ }).click();
-  await expect(page.getByText(/Imported 1 photo/).first()).toBeVisible({ timeout: 45_000 });
+  await expect(page.getByText(/Photos imported/).first()).toBeVisible({ timeout: 45_000 });
   await expect(page.getByRole("dialog")).toBeHidden({ timeout: 15_000 });
 
   await page.getByRole("tab", { name: "Photos" }).click();

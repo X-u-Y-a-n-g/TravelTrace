@@ -17,8 +17,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useI18n } from "@/i18n";
 import { ApiError, api } from "@/lib/api";
-import { PLACE_CATEGORIES, PLACE_CATEGORY_COLORS } from "@/lib/constants";
+import {
+  CATEGORY_LABEL_KEYS,
+  PLACE_CATEGORIES,
+  PLACE_CATEGORY_COLORS,
+} from "@/lib/constants";
 import { useDebouncedValue } from "@/lib/hooks";
 import { useInstanceSettings, usePlaces } from "@/lib/queries";
 import type { Place, PlaceCategory } from "@/lib/types";
@@ -39,6 +44,7 @@ export function PlaceDialog({
   attachedPlaceIds: string[];
   onDone?: () => void;
 }) {
+  const { t, errorText } = useI18n();
   const queryClient = useQueryClient();
   const settings = useInstanceSettings();
   const [mode, setMode] = useState<Mode>("existing");
@@ -85,11 +91,11 @@ export function PlaceDialog({
       setCountry(result.country ?? country);
       setCountryCode(result.country_code ?? countryCode);
       setAddress(result.display_name ?? address);
-      toast.success("Address found");
+      toast.success(t("placeDialog.lookupSuccess"));
     },
     onError: (mutationError) => {
       toast.error(
-        mutationError instanceof ApiError ? mutationError.message : "The address lookup failed",
+        mutationError instanceof ApiError ? errorText(mutationError) : t("placeDialog.lookupError"),
       );
     },
   });
@@ -97,12 +103,12 @@ export function PlaceDialog({
   const attach = useMutation({
     mutationFn: async () => {
       if (mode === "existing") {
-        if (!selectedPlaceId) throw new Error("Choose a place first");
+        if (!selectedPlaceId) throw new Error(t("placeDialog.chooseError"));
         return api.trips.attachPlace(tripId, { place_id: selectedPlaceId });
       }
       const hasCoordinates = latitude.trim() !== "" && longitude.trim() !== "";
       if (latitude.trim() !== "" || longitude.trim() !== "") {
-        if (!hasCoordinates) throw new Error("Latitude and longitude must be filled together");
+        if (!hasCoordinates) throw new Error(t("placeDialog.coordinatesError"));
       }
       const place = await api.places.create({
         name: name.trim(),
@@ -118,7 +124,7 @@ export function PlaceDialog({
       return api.trips.attachPlace(tripId, { place_id: place.id });
     },
     onSuccess: () => {
-      toast.success("Place added to the trip");
+      toast.success(t("placeDialog.success"));
       queryClient.invalidateQueries({ queryKey: ["trips", tripId] });
       queryClient.invalidateQueries({ queryKey: ["trips"] });
       queryClient.invalidateQueries({ queryKey: ["places"] });
@@ -129,7 +135,11 @@ export function PlaceDialog({
     },
     onError: (mutationError) => {
       setError(
-        mutationError instanceof ApiError ? mutationError.message : "Could not add the place",
+        mutationError instanceof ApiError
+          ? errorText(mutationError)
+          : mutationError instanceof Error
+            ? mutationError.message
+            : t("placeDialog.error"),
       );
     },
   });
@@ -141,9 +151,9 @@ export function PlaceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Add a place</DialogTitle>
+          <DialogTitle>{t("placeDialog.title")}</DialogTitle>
           <DialogDescription>
-            Places can be reused across trips. Add a visit to keep this journey's map complete.
+            {t("placeDialog.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -163,7 +173,7 @@ export function PlaceDialog({
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              {value === "existing" ? "From my places" : "Create new"}
+              {value === "existing" ? t("placeDialog.tabExisting") : t("placeDialog.tabNew")}
             </button>
           ))}
         </div>
@@ -175,13 +185,13 @@ export function PlaceDialog({
               <Input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search saved places…"
+                placeholder={t("placeDialog.searchPlaceholder")}
                 className="pl-10"
               />
             </div>
             <div className="max-h-72 space-y-1.5 overflow-y-auto pr-1">
               {places.isPending ? (
-                <p className="py-6 text-center text-sm text-muted-foreground">Loading places…</p>
+                <p className="py-6 text-center text-sm text-muted-foreground">{t("placeDialog.loading")}</p>
               ) : places.data?.items.length ? (
                 places.data.items.map((place) => (
                   <ExistingPlaceRow
@@ -194,10 +204,10 @@ export function PlaceDialog({
                 ))
               ) : (
                 <div className="py-8 text-center">
-                  <p className="text-sm text-muted-foreground">No saved places yet.</p>
+                  <p className="text-sm text-muted-foreground">{t("placeDialog.empty")}</p>
                   <Button variant="outline" size="sm" className="mt-3" onClick={() => setMode("new")}>
                     <Plus className="size-3.5" />
-                    Create the first one
+                    {t("placeDialog.createFirst")}
                   </Button>
                 </div>
               )}
@@ -206,19 +216,19 @@ export function PlaceDialog({
         ) : (
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="place-name">Name</Label>
+              <Label htmlFor="place-name">{t("placeDialog.name")}</Label>
               <Input
                 id="place-name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Kiyomizu-dera"
+                placeholder={t("placeDialog.namePlaceholder")}
                 autoFocus
                 maxLength={255}
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="place-category">Category</Label>
+                <Label htmlFor="place-category">{t("placeDialog.category")}</Label>
                 <Select
                   id="place-category"
                   value={category}
@@ -226,33 +236,33 @@ export function PlaceDialog({
                 >
                   {PLACE_CATEGORIES.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label}
+                      {t(option.labelKey)}
                     </option>
                   ))}
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="place-city">City</Label>
+                <Label htmlFor="place-city">{t("placeDialog.city")}</Label>
                 <Input
                   id="place-city"
                   value={city}
                   onChange={(event) => setCity(event.target.value)}
-                  placeholder="Kyoto"
+                  placeholder={t("placeDialog.cityPlaceholder")}
                 />
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="place-country">Country</Label>
+                <Label htmlFor="place-country">{t("placeDialog.country")}</Label>
                 <Input
                   id="place-country"
                   value={country}
                   onChange={(event) => setCountry(event.target.value)}
-                  placeholder="Japan"
+                  placeholder={t("placeDialog.countryPlaceholder")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="place-country-code">Country code</Label>
+                <Label htmlFor="place-country-code">{t("placeDialog.countryCode")}</Label>
                 <Input
                   id="place-country-code"
                   value={countryCode}
@@ -264,7 +274,7 @@ export function PlaceDialog({
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="place-latitude">Latitude</Label>
+                <Label htmlFor="place-latitude">{t("placeDialog.latitude")}</Label>
                 <Input
                   id="place-latitude"
                   value={latitude}
@@ -274,7 +284,7 @@ export function PlaceDialog({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="place-longitude">Longitude</Label>
+                <Label htmlFor="place-longitude">{t("placeDialog.longitude")}</Label>
                 <Input
                   id="place-longitude"
                   value={longitude}
@@ -292,26 +302,26 @@ export function PlaceDialog({
                 onClick={() => geocode.mutate()}
               >
                 {geocode.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-                Look up the address
+                {t("placeDialog.lookup")}
               </Button>
             )}
             <div className="space-y-1.5">
-              <Label htmlFor="place-address">Address</Label>
+              <Label htmlFor="place-address">{t("placeDialog.address")}</Label>
               <Input
                 id="place-address"
                 value={address}
                 onChange={(event) => setAddress(event.target.value)}
-                placeholder="1-294 Kiyomizu, Higashiyama Ward, Kyoto"
+                placeholder={t("placeDialog.addressPlaceholder")}
                 maxLength={500}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="place-notes">Notes</Label>
+              <Label htmlFor="place-notes">{t("placeDialog.notes")}</Label>
               <Textarea
                 id="place-notes"
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
-                placeholder="Why this place matters…"
+                placeholder={t("placeDialog.notesPlaceholder")}
                 rows={2}
                 maxLength={2000}
               />
@@ -327,11 +337,11 @@ export function PlaceDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={attach.isPending}>
-            Cancel
+            {t("placeDialog.cancel")}
           </Button>
           <Button onClick={() => attach.mutate()} disabled={!canSubmit || attach.isPending}>
             {attach.isPending ? <Loader2 className="size-4 animate-spin" /> : <MapPin className="size-4" />}
-            Add to trip
+            {t("placeDialog.addToTrip")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -350,6 +360,7 @@ function ExistingPlaceRow({
   attached: boolean;
   onSelect: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
@@ -369,14 +380,16 @@ function ExistingPlaceRow({
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-medium">{place.name}</span>
         <span className="block truncate text-[11px] text-muted-foreground">
-          {[place.city, place.country].filter(Boolean).join(", ") || "No location details"}
+          {[place.city, place.country].filter(Boolean).join(", ") || t("placeDialog.noLocation")}
         </span>
       </span>
       <span className="flex shrink-0 items-center gap-1.5">
-        <Badge className={cn("capitalize", PLACE_CATEGORY_COLORS[place.category])} variant="outline">
-          {place.category}
+        <Badge className={PLACE_CATEGORY_COLORS[place.category]} variant="outline">
+          {t(CATEGORY_LABEL_KEYS[place.category])}
         </Badge>
-        {attached && <span className="text-[10px] text-muted-foreground">Added</span>}
+        {attached && (
+          <span className="text-[10px] text-muted-foreground">{t("placeDialog.added")}</span>
+        )}
       </span>
     </button>
   );

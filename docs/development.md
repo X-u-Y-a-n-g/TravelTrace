@@ -120,6 +120,25 @@ VITE_MAP_STYLE_URL=https://your-tiles.example.com/style.json npm run build
 The browser needs WebGL and network access to the style's tiles/glyphs. A style outage shows a
 non-blocking hint; the rest of the application keeps working.
 
+### Internationalisation
+
+All UI copy lives in [`frontend/src/i18n/translations.ts`](../frontend/src/i18n/translations.ts).
+The English dictionary is the source of truth for the typed key union; the Chinese dictionary must
+implement every key. Use `useI18n()` in components:
+
+```tsx
+const { t, f, language, setLanguage } = useI18n();
+t("trip.photosFromTrip");
+t("common.photoCount", { count: 3 });
+f.dateRange(trip.start_date, trip.end_date);
+```
+
+Chinese is the default for first-time visitors. The choice is stored under
+`traveltrace-language` and shared by the login page, sidebar, mobile header and settings page.
+When adding copy, add the key to both dictionaries and use locale-aware `f.*` helpers instead of
+hard-coded date formats. `npm run typecheck` fails if a key is missing from the English dictionary
+or used with the wrong shape.
+
 ## Environment variables
 
 All backend settings live in [`backend/app/core/config.py`](../backend/app/core/config.py). The

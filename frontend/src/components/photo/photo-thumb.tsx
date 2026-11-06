@@ -1,6 +1,7 @@
 import { ImageOff } from "lucide-react";
 import { useState } from "react";
 
+import { useI18n } from "@/i18n";
 import { photoUrl } from "@/lib/api";
 import type { PhotoMini } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -24,12 +25,13 @@ export function PhotoThumb({
 }) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const { t } = useI18n();
 
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={alt ?? photo.caption ?? "Open photo"}
+      aria-label={alt ?? photo.caption ?? t("photo.openPhoto")}
       className={cn(
         "group relative block overflow-hidden bg-sand-200/70 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         onClick ? "cursor-pointer" : "cursor-default",
@@ -39,7 +41,7 @@ export function PhotoThumb({
       {!failed ? (
         <img
           src={photoUrl(photo.id, size)}
-          alt={alt ?? photo.caption ?? "Travel photo"}
+          alt={alt ?? photo.caption ?? t("common.photo")}
           loading="lazy"
           decoding="async"
           onLoad={() => setLoaded(true)}

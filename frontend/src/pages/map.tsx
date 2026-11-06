@@ -15,14 +15,19 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetBody, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
-import { PLACE_CATEGORIES, PLACE_CATEGORY_ICONS } from "@/lib/constants";
-import { formatDateTime } from "@/lib/format";
+import { useI18n } from "@/i18n";
+import {
+  CATEGORY_LABEL_KEYS,
+  PLACE_CATEGORIES,
+  PLACE_CATEGORY_ICONS,
+} from "@/lib/constants";
 import { useMarkers, useRoutes, useTrips } from "@/lib/queries";
 import { photoUrl } from "@/lib/api";
 import type { MapMarker, PlaceCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function MapPage() {
+  const { t, f } = useI18n();
   const navigate = useNavigate();
   const trips = useTrips({ size: 100, sort: "start_date_desc" });
   const [tripIds, setTripIds] = useState<string[]>([]);
@@ -91,16 +96,18 @@ export function MapPage() {
             >
               <div className="flex items-start justify-between gap-2 border-b border-border/70 px-4 py-4">
                 <div>
-                  <p className="eyebrow">Atlas</p>
-                  <h1 className="mt-0.5 font-display text-2xl font-semibold">Travel map</h1>
+                  <p className="eyebrow">{t("map.atlas")}</p>
+                  <h1 className="mt-0.5 font-display text-2xl font-semibold">{t("map.title")}</h1>
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    {markers.data ? `${markers.data.total} mapped moments` : "Loading your footprint…"}
+                    {markers.data
+                      ? t("map.mappedMoments", { count: markers.data.total })
+                      : t("map.loading")}
                   </p>
                 </div>
                 <button
                   className="rounded-full p-1.5 text-muted-foreground hover:bg-secondary lg:hidden"
                   onClick={() => setFiltersOpen(false)}
-                  aria-label="Close filters"
+                  aria-label={t("map.closeFilters")}
                 >
                   <X className="size-4" />
                 </button>
@@ -109,17 +116,17 @@ export function MapPage() {
               <div className="max-h-[52vh] space-y-5 overflow-y-auto p-4">
                 <section className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label>Trips</Label>
+                    <Label>{t("map.trips")}</Label>
                     <div className="flex items-center gap-2 text-[10px]">
                       <button
                         className="text-primary hover:underline"
                         onClick={() => setTripIds(trips.data?.items.map((trip) => trip.id) ?? [])}
                       >
-                        All
+                        {t("map.all")}
                       </button>
                       <span className="text-border">·</span>
                       <button className="text-muted-foreground hover:underline" onClick={() => setTripIds([])}>
-                        None
+                        {t("map.none")}
                       </button>
                     </div>
                   </div>
@@ -163,14 +170,14 @@ export function MapPage() {
                       })
                     ) : (
                       <p className="rounded-xl bg-secondary/50 px-3 py-2 text-[11px] text-muted-foreground">
-                        No trips yet. Create one to start mapping.
+                        {t("map.noTrips")}
                       </p>
                     )}
                   </div>
                 </section>
 
                 <section className="space-y-2">
-                  <Label>Place type</Label>
+                  <Label>{t("map.placeType")}</Label>
                   <div className="flex flex-wrap gap-1.5">
                     {PLACE_CATEGORIES.map((category) => {
                       const Icon = PLACE_CATEGORY_ICONS[category.value];
@@ -188,7 +195,7 @@ export function MapPage() {
                           )}
                         >
                           <Icon className="size-3" />
-                          {category.label}
+                          {t(category.labelKey)}
                         </button>
                       );
                     })}
@@ -198,14 +205,16 @@ export function MapPage() {
                 <section className="flex items-center justify-between gap-3 rounded-xl bg-secondary/40 px-3 py-2.5">
                   <span className="flex items-center gap-2 text-xs">
                     <RouteIcon className="size-3.5 text-pine-700" />
-                    Draw trip routes
+                    {t("map.drawRoutes")}
                   </span>
-                  <Switch checked={showRoutes} onCheckedChange={setShowRoutes} aria-label="Show routes" />
+                  <Switch checked={showRoutes} onCheckedChange={setShowRoutes} aria-label={t("map.showRoutes")} />
                 </section>
 
                 {activeFilterCount > 0 && (
                   <Button variant="ghost" size="sm" className="w-full" onClick={resetFilters}>
-                    Clear {activeFilterCount} filter{activeFilterCount === 1 ? "" : "s"}
+                    {activeFilterCount === 1
+                      ? t("map.clearFiltersOne")
+                      : t("map.clearFilters", { count: activeFilterCount })}
                   </Button>
                 )}
               </div>
@@ -219,7 +228,7 @@ export function MapPage() {
                 onClick={() => setFiltersOpen(true)}
               >
                 <SlidersHorizontal className="size-3.5" />
-                Filters
+                {t("map.filters")}
                 {activeFilterCount > 0 && (
                   <span className="ml-0.5 rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
                     {activeFilterCount}
@@ -229,16 +238,16 @@ export function MapPage() {
               <div className="hidden items-center gap-3 rounded-full border border-border/80 bg-card/95 px-3.5 py-2 text-[11px] shadow-soft backdrop-blur sm:flex">
                 <span className="flex items-center gap-1.5">
                   <span className="size-2 rounded-full bg-ember-500" />
-                  Photo
+                  {t("map.legendPhoto")}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="size-2 rounded-full bg-pine-700" />
-                  Place
+                  {t("map.legendPlace")}
                 </span>
                 {showRoutes && (
                   <span className="flex items-center gap-1.5">
                     <span className="h-px w-4 border-t-2 border-dashed border-pine-600" />
-                    Route
+                    {t("map.legendRoute")}
                   </span>
                 )}
               </div>
@@ -247,11 +256,11 @@ export function MapPage() {
 
           <div className="flex items-end justify-between gap-3">
             <div className="pointer-events-auto hidden rounded-2xl border border-border/80 bg-card/95 px-3.5 py-2.5 text-[11px] text-muted-foreground shadow-soft backdrop-blur sm:block">
-              Tap a marker to open it. Scroll to zoom; the map clusters dense photo spots.
+              {t("map.hint")}
             </div>
             {markers.data?.truncated && (
               <Badge variant="outline" className="pointer-events-auto bg-card/95">
-                Showing first {markers.data.items.length} markers
+                {t("map.showingFirst", { count: markers.data.items.length })}
               </Badge>
             )}
           </div>
@@ -263,7 +272,7 @@ export function MapPage() {
           {selected?.kind === "photo" ? (
             <>
               <SheetHeader>
-                <p className="eyebrow">Photo</p>
+                <p className="eyebrow">{t("map.photo")}</p>
                 <SheetTitle>{selected.title}</SheetTitle>
                 <p className="text-xs text-muted-foreground">{selected.subtitle}</p>
               </SheetHeader>
@@ -277,31 +286,31 @@ export function MapPage() {
                 )}
                 <dl className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Coordinates</dt>
+                    <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{t("map.coordinates")}</dt>
                     <dd className="mt-0.5 font-medium tabular-nums">
                       {selected.latitude.toFixed(4)}, {selected.longitude.toFixed(4)}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Taken</dt>
-                    <dd className="mt-0.5 font-medium">{formatDateTime(selected.taken_at)}</dd>
+                    <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{t("map.taken")}</dt>
+                    <dd className="mt-0.5 font-medium">{f.dateTime(selected.taken_at)}</dd>
                   </div>
                   <div className="col-span-2">
-                    <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Journey</dt>
-                    <dd className="mt-0.5 font-medium">{selected.trip_title ?? "Unsorted"}</dd>
+                    <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{t("map.journey")}</dt>
+                    <dd className="mt-0.5 font-medium">{selected.trip_title ?? t("map.unsorted")}</dd>
                   </div>
                 </dl>
               </SheetBody>
               <SheetFooter>
                 <Button variant="outline" onClick={() => setSelected(null)}>
-                  Close
+                  {t("map.close")}
                 </Button>
                 <Button
                   onClick={() => {
                     if (selected.photo_id) navigate(`/photos?photo=${selected.photo_id}`);
                   }}
                 >
-                  Open in gallery
+                  {t("map.openGallery")}
                   <ArrowUpRight className="size-4" />
                 </Button>
               </SheetFooter>
@@ -309,7 +318,7 @@ export function MapPage() {
           ) : selected?.kind === "place" ? (
             <>
               <SheetHeader>
-                <p className="eyebrow">Place</p>
+                <p className="eyebrow">{t("map.place")}</p>
                 <SheetTitle>{selected.title}</SheetTitle>
                 <p className="text-xs text-muted-foreground">{selected.subtitle}</p>
               </SheetHeader>
@@ -322,14 +331,16 @@ export function MapPage() {
                 </div>
                 <dl className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Coordinates</dt>
+                    <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{t("map.coordinates")}</dt>
                     <dd className="mt-0.5 font-medium tabular-nums">
                       {selected.latitude.toFixed(4)}, {selected.longitude.toFixed(4)}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Type</dt>
-                    <dd className="mt-0.5 font-medium capitalize">{selected.category}</dd>
+                    <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{t("map.type")}</dt>
+                    <dd className="mt-0.5 font-medium">
+                      {selected.category ? t(CATEGORY_LABEL_KEYS[selected.category]) : "—"}
+                    </dd>
                   </div>
                 </dl>
                 {selected.trip_id && (
@@ -338,13 +349,13 @@ export function MapPage() {
                     className={buttonVariants({ variant: "outline", size: "sm" })}
                   >
                     <Compass className="size-3.5" />
-                    Open the trip
+                    {t("map.openTrip")}
                   </Link>
                 )}
               </SheetBody>
               <SheetFooter>
                 <Button variant="outline" onClick={() => setSelected(null)}>
-                  Close
+                  {t("map.close")}
                 </Button>
               </SheetFooter>
             </>
@@ -356,7 +367,7 @@ export function MapPage() {
         <div className="pointer-events-none absolute inset-x-0 bottom-24 z-10 flex justify-center px-4">
           <div className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-border bg-card/95 px-4 py-3 text-xs text-muted-foreground shadow-lift">
             <Layers className="size-4 text-pine-700" />
-            No mapped photos or places yet. Import geotagged photos or add places to a trip.
+            {t("map.noMarkers")}
           </div>
         </div>
       )}

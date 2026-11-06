@@ -14,13 +14,15 @@ import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ApiError, api } from "@/lib/api";
+import { useI18n } from "@/i18n";
+import { api } from "@/lib/api";
 import { TRIP_SORT_OPTIONS } from "@/lib/constants";
 import { useDebouncedValue } from "@/lib/hooks";
 import { useStats, useTrips } from "@/lib/queries";
 import type { Trip } from "@/lib/types";
 
 export function TripsPage() {
+  const { t, errorText } = useI18n();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
@@ -63,8 +65,8 @@ export function TripsPage() {
   const remove = useMutation({
     mutationFn: (trip: Trip) => api.trips.remove(trip.id),
     onSuccess: () => {
-      toast.success("Trip moved to the archive", {
-        description: "Its photos stay in your library and can be matched again later.",
+      toast.success(t("trips.deleteToast"), {
+        description: t("trips.deleteToastDescription"),
       });
       queryClient.invalidateQueries({ queryKey: ["trips"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
@@ -73,7 +75,7 @@ export function TripsPage() {
       setPendingDelete(null);
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : "Could not delete the trip");
+      toast.error(errorText(error));
     },
   });
 
@@ -94,9 +96,9 @@ export function TripsPage() {
   return (
     <div className="page-shell">
       <PageHeader
-        eyebrow="Chapters"
-        title="My trips"
-        description="Every journey, from a single afternoon to a month abroad. Dates and photos stay connected."
+        eyebrow={t("trips.eyebrow")}
+        title={t("trips.title")}
+        description={t("trips.description")}
         actions={
           <Button
             variant="accent"
@@ -106,7 +108,7 @@ export function TripsPage() {
             }}
           >
             <Plus className="size-4" />
-            New trip
+            {t("trips.newTrip")}
           </Button>
         }
       />
@@ -117,23 +119,23 @@ export function TripsPage() {
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search trips by title…"
+            placeholder={t("trips.searchPlaceholder")}
             className="pl-10"
-            aria-label="Search trips"
+            aria-label={t("common.search")}
           />
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <SlidersHorizontal className="size-3.5" />
-            <span className="hidden sm:inline">Filter</span>
+            <span className="hidden sm:inline">{t("trips.filter")}</span>
           </div>
           <Select
             value={year}
             onChange={(event) => setYear(event.target.value)}
-            aria-label="Filter by year"
+            aria-label={t("trips.allYears")}
             className="w-[130px]"
           >
-            <option value="">All years</option>
+            <option value="">{t("trips.allYears")}</option>
             {years.map((value) => (
               <option key={value} value={value}>
                 {value}
@@ -143,12 +145,12 @@ export function TripsPage() {
           <Select
             value={sort}
             onChange={(event) => setSort(event.target.value)}
-            aria-label="Sort trips"
+            aria-label={t("trips.filter")}
             className="w-[175px]"
           >
             {TRIP_SORT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
-                {option.label}
+                {t(option.labelKey)}
               </option>
             ))}
           </Select>
@@ -162,7 +164,11 @@ export function TripsPage() {
           ))}
         </div>
       ) : trips.isError ? (
-        <ErrorState onRetry={() => trips.refetch()} />
+        <ErrorState
+          title={t("error.load")}
+          message={t("error.description")}
+          onRetry={() => trips.refetch()}
+        />
       ) : trips.data && trips.data.items.length > 0 ? (
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -193,14 +199,14 @@ export function TripsPage() {
               </span>
               <span>
                 <span className="block font-display text-lg font-semibold">
-                  Plan another journey
+                  {t("trips.planBannerTitle")}
                 </span>
                 <span className="block text-xs text-muted-foreground">
-                  A weekend, a month, a single afternoon.
+                  {t("trips.planBannerDescription")}
                 </span>
               </span>
             </span>
-            <span className="text-xs font-medium text-primary">Create a trip →</span>
+            <span className="text-xs font-medium text-primary">{t("trips.planBannerCta")}</span>
           </button>
 
           {trips.data.pages > 1 && (
@@ -211,10 +217,10 @@ export function TripsPage() {
                 disabled={page <= 1}
                 onClick={() => setPage((current) => Math.max(current - 1, 1))}
               >
-                Previous
+                {t("common.previous")}
               </Button>
               <span className="text-xs text-muted-foreground">
-                Page {trips.data.page} of {trips.data.pages}
+                {t("common.pageOf", { page: trips.data.page, pages: trips.data.pages })}
               </span>
               <Button
                 variant="outline"
@@ -222,7 +228,7 @@ export function TripsPage() {
                 disabled={page >= trips.data.pages}
                 onClick={() => setPage((current) => current + 1)}
               >
-                Next
+                {t("common.next")}
               </Button>
             </div>
           )}
@@ -230,11 +236,9 @@ export function TripsPage() {
       ) : (
         <EmptyState
           icon={isFiltered ? Search : Compass}
-          title={isFiltered ? "No trips match this filter" : "No journeys yet"}
+          title={isFiltered ? t("trips.noMatchTitle") : t("trips.noTripsTitle")}
           description={
-            isFiltered
-              ? "Try a different year or search term."
-              : "Create a trip and import your photos. TravelTrace will rebuild the map and timeline for you."
+            isFiltered ? t("trips.noMatchDescription") : t("trips.noTripsDescription")
           }
           action={
             isFiltered ? (
@@ -245,12 +249,12 @@ export function TripsPage() {
                   setYear("");
                 }}
               >
-                Clear filters
+                {t("common.clearFilters")}
               </Button>
             ) : (
               <Button variant="accent" onClick={() => setDialogOpen(true)}>
                 <Plus className="size-4" />
-                Create your first trip
+                {t("trips.createFirst")}
               </Button>
             )
           }
@@ -271,9 +275,10 @@ export function TripsPage() {
         onOpenChange={(open) => {
           if (!open) setPendingDelete(null);
         }}
-        title="Delete this trip?"
-        description={`“${pendingDelete?.title ?? ""}” will be archived. Its photos stay in your library but leave the map and timeline.`}
-        confirmLabel="Delete trip"
+        title={t("trips.deleteTitle")}
+        description={t("trips.deleteDescription", { title: pendingDelete?.title ?? "" })}
+        confirmLabel={t("trips.deleteConfirm")}
+        cancelLabel={t("common.cancel")}
         loading={remove.isPending}
         onConfirm={() => {
           if (pendingDelete) remove.mutate(pendingDelete);

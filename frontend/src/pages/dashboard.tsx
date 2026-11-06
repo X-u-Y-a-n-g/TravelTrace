@@ -25,12 +25,20 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
-import { formatBytes, formatDate, formatNumber } from "@/lib/format";
+import { useI18n } from "@/i18n";
+import { formatBytes, formatNumber } from "@/lib/format";
 import { useMarkers, useStats } from "@/lib/queries";
 import type { MapMarker } from "@/lib/types";
 import { useAuthStore } from "@/stores/auth";
 
+const WELCOME_STEPS = [
+  { number: "01", titleKey: "dash.step1Title", bodyKey: "dash.step1Body" },
+  { number: "02", titleKey: "dash.step2Title", bodyKey: "dash.step2Body" },
+  { number: "03", titleKey: "dash.step3Title", bodyKey: "dash.step3Body" },
+] as const;
+
 export function DashboardPage() {
+  const { t, f } = useI18n();
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const stats = useStats();
@@ -38,14 +46,16 @@ export function DashboardPage() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [tripOpen, setTripOpen] = useState(false);
 
-  const displayName = user?.display_name || user?.username || "traveller";
-  const greeting = (() => {
-    const hour = new Date().getHours();
-    if (hour < 5) return "Still up";
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
-  })();
+  const displayName = user?.display_name || user?.username || t("common.traveller");
+  const hour = new Date().getHours();
+  const greetingKey =
+    hour < 5
+      ? "dash.greetingStillUp"
+      : hour < 12
+        ? "dash.greetingMorning"
+        : hour < 18
+          ? "dash.greetingAfternoon"
+          : "dash.greetingEvening";
 
   const data = stats.data;
   const mapMarkers = markers.data?.items ?? [];
@@ -61,18 +71,18 @@ export function DashboardPage() {
   return (
     <div className="page-shell">
       <PageHeader
-        eyebrow={formatDate(new Date().toISOString(), "EEEE, MMMM d")}
-        title={`${greeting}, ${displayName}.`}
-        description="Every photo is a coordinate. Every date is a chapter. Here is the journey so far."
+        eyebrow={f.headerDate(new Date().toISOString())}
+        title={t(greetingKey, { name: displayName })}
+        description={t("dash.subtitle")}
         actions={
           <>
             <Button variant="outline" onClick={() => setUploadOpen(true)}>
               <Upload className="size-4" />
-              Import photos
+              {t("dash.importPhotos")}
             </Button>
             <Button variant="accent" onClick={() => setTripOpen(true)}>
               <Plus className="size-4" />
-              New trip
+              {t("dash.newTrip")}
             </Button>
           </>
         }
@@ -82,8 +92,8 @@ export function DashboardPage() {
         <DashboardSkeleton />
       ) : stats.isError ? (
         <ErrorState
-          title="We couldn't read your journal"
-          message="The dashboard statistics are unavailable right now."
+          title={t("error.load")}
+          message={t("error.description")}
           onRetry={() => stats.refetch()}
         />
       ) : data ? (
@@ -94,29 +104,29 @@ export function DashboardPage() {
             <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
               <StatCard
                 icon={Luggage}
-                label="Journeys"
+                label={t("dash.journeys")}
                 value={formatNumber(data.trips)}
-                hint={`${formatNumber(data.days)} days on the road`}
+                hint={t("dash.daysOnRoad", { days: formatNumber(data.days) })}
               />
               <StatCard
                 icon={Globe2}
-                label="Countries"
+                label={t("dash.countries")}
                 value={formatNumber(data.countries)}
-                hint={`${formatNumber(data.cities)} cities visited`}
+                hint={t("dash.citiesVisited", { cities: formatNumber(data.cities) })}
                 tone="sand"
               />
               <StatCard
                 icon={MapPin}
-                label="Places"
+                label={t("dash.places")}
                 value={formatNumber(data.places)}
-                hint={`${formatNumber(data.gps_photos)} geotagged photos`}
+                hint={t("dash.geotaggedPhotos", { photos: formatNumber(data.gps_photos) })}
                 tone="ember"
               />
               <StatCard
                 icon={Camera}
-                label="Photos"
+                label={t("dash.photos")}
                 value={formatNumber(data.photos)}
-                hint={`${formatBytes(data.storage_bytes)} stored`}
+                hint={t("dash.storageStored", { size: formatBytes(data.storage_bytes) })}
               />
             </div>
 
@@ -124,14 +134,11 @@ export function DashboardPage() {
               <section className="surface overflow-hidden">
                 <div className="flex items-start justify-between gap-4 px-5 pb-4 pt-5">
                   <div>
-                    <p className="eyebrow">Footprint</p>
-                    <h2 className="mt-1 font-display text-2xl">The world so far</h2>
+                    <p className="eyebrow">{t("dash.footprint")}</p>
+                    <h2 className="mt-1 font-display text-2xl">{t("dash.worldSoFar")}</h2>
                   </div>
-                  <Link
-                    to="/map"
-                    className={buttonVariants({ variant: "outline", size: "sm" })}
-                  >
-                    Open the map
+                  <Link to="/map" className={buttonVariants({ variant: "outline", size: "sm" })}>
+                    {t("dash.openMap")}
                     <ArrowRight className="size-3.5" />
                   </Link>
                 </div>
@@ -151,13 +158,11 @@ export function DashboardPage() {
                       </Badge>
                     ))
                   ) : (
-                    <p className="text-xs text-muted-foreground">
-                      Add places to your trips to fill in the map.
-                    </p>
+                    <p className="text-xs text-muted-foreground">{t("dash.noCountries")}</p>
                   )}
                   {markers.data?.truncated && (
                     <span className="ml-auto text-[11px] text-muted-foreground">
-                      Showing a subset of markers
+                      {t("dash.showingSubset")}
                     </span>
                   )}
                 </div>
@@ -167,8 +172,8 @@ export function DashboardPage() {
                 <section className="surface p-5">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="eyebrow">Rhythm</p>
-                      <h2 className="mt-1 font-display text-2xl">Journeys by year</h2>
+                      <p className="eyebrow">{t("dash.rhythm")}</p>
+                      <h2 className="mt-1 font-display text-2xl">{t("dash.journeysByYear")}</h2>
                     </div>
                     <CalendarDays className="size-4 text-muted-foreground" />
                   </div>
@@ -181,7 +186,8 @@ export function DashboardPage() {
                             <div className="flex items-baseline justify-between text-xs">
                               <span className="font-medium">{year.year}</span>
                               <span className="text-muted-foreground">
-                                {year.trips} trip{year.trips === 1 ? "" : "s"} · {year.photos} photos
+                                {t("common.tripCount", { count: year.trips })} ·{" "}
+                                {t("common.photoCount", { count: year.photos })}
                               </span>
                             </div>
                             <div className="h-1.5 overflow-hidden rounded-full bg-sand-200/80">
@@ -194,9 +200,7 @@ export function DashboardPage() {
                         );
                       })
                     ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Your yearly rhythm will appear once photos have dates.
-                      </p>
+                      <p className="text-sm text-muted-foreground">{t("dash.noYears")}</p>
                     )}
                   </div>
                 </section>
@@ -204,14 +208,11 @@ export function DashboardPage() {
                 <section className="surface p-5">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="eyebrow">Latest frames</p>
-                      <h2 className="mt-1 font-display text-2xl">Recently added</h2>
+                      <p className="eyebrow">{t("dash.latestFrames")}</p>
+                      <h2 className="mt-1 font-display text-2xl">{t("dash.recentlyAdded")}</h2>
                     </div>
-                    <Link
-                      to="/photos"
-                      className="text-xs font-medium text-primary hover:underline"
-                    >
-                      View gallery
+                    <Link to="/photos" className="text-xs font-medium text-primary hover:underline">
+                      {t("dash.viewGallery")}
                     </Link>
                   </div>
                   {data.recent_photos.length ? (
@@ -228,12 +229,10 @@ export function DashboardPage() {
                   ) : (
                     <div className="mt-4 flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border px-4 py-6 text-center">
                       <Images className="size-5 text-muted-foreground" />
-                      <p className="text-xs text-muted-foreground">
-                        No photos yet. Import your first batch to light up the map.
-                      </p>
+                      <p className="text-xs text-muted-foreground">{t("dash.noPhotos")}</p>
                       <Button variant="outline" size="sm" onClick={() => setUploadOpen(true)}>
                         <Upload className="size-3.5" />
-                        Import photos
+                        {t("dash.importFirst")}
                       </Button>
                     </div>
                   )}
@@ -244,11 +243,11 @@ export function DashboardPage() {
             <section>
               <div className="mb-4 flex items-end justify-between">
                 <div>
-                  <p className="eyebrow">Chapters</p>
-                  <h2 className="mt-1 font-display text-2xl">Recent journeys</h2>
+                  <p className="eyebrow">{t("dash.chapters")}</p>
+                  <h2 className="mt-1 font-display text-2xl">{t("dash.recentJourneys")}</h2>
                 </div>
                 <Link to="/trips" className="text-xs font-medium text-primary hover:underline">
-                  All trips
+                  {t("dash.allTrips")}
                 </Link>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -262,10 +261,8 @@ export function DashboardPage() {
                   <span className="flex size-11 items-center justify-center rounded-2xl bg-pine-100 text-pine-700 transition-transform group-hover:scale-105">
                     <Plus className="size-5" />
                   </span>
-                  <span className="font-display text-lg font-semibold">Plan another journey</span>
-                  <span className="text-xs text-muted-foreground">
-                    A weekend, a month, a single afternoon.
-                  </span>
+                  <span className="font-display text-lg font-semibold">{t("dash.planAnother")}</span>
+                  <span className="text-xs text-muted-foreground">{t("dash.planSubtitle")}</span>
                 </Link>
               </div>
             </section>
@@ -290,24 +287,7 @@ function WelcomePanel({
   onCreateTrip: () => void;
   onUpload: () => void;
 }) {
-  const steps = [
-    {
-      number: "01",
-      title: "Create your first trip",
-      description: "Name it, pick the dates, and set how private it should be.",
-    },
-    {
-      number: "02",
-      title: "Import the photos",
-      description: "TravelTrace reads EXIF time and GPS and builds thumbnails automatically.",
-    },
-    {
-      number: "03",
-      title: "Watch it reconstruct",
-      description: "Photos land on the map and a draft timeline appears, ready for your edits.",
-    },
-  ];
-
+  const { t } = useI18n();
   return (
     <section className="overflow-hidden rounded-[2rem] border border-border/80 bg-card/70 shadow-soft">
       <div className="relative overflow-hidden bg-[#1b352c] px-7 py-12 text-sand-50 sm:px-12">
@@ -331,19 +311,18 @@ function WelcomePanel({
         <div className="relative max-w-xl">
           <Badge variant="outline" className="border-white/20 bg-white/5 text-sand-100">
             <Sparkles className="size-3" />
-            A fresh journal
+            {t("dash.welcomeBadge")}
           </Badge>
           <h2 className="mt-4 text-balance font-display text-4xl font-semibold leading-[1.02] text-sand-50 sm:text-5xl">
-            Turn a camera roll into a journey you can walk through.
+            {t("dash.welcomeTitle")}
           </h2>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-sand-100/70">
-            TravelTrace reconstructs the map, the timeline and the story from the metadata already
-            inside your photos. Nothing to tag by hand.
+            {t("dash.welcomeIntro")}
           </p>
           <div className="mt-7 flex flex-wrap gap-2.5">
             <Button variant="accent" onClick={onCreateTrip}>
               <Plus className="size-4" />
-              Create your first trip
+              {t("dash.createFirst")}
             </Button>
             <Button
               variant="outline"
@@ -351,21 +330,21 @@ function WelcomePanel({
               onClick={onUpload}
             >
               <Upload className="size-4" />
-              Import photos instead
+              {t("dash.importInstead")}
             </Button>
           </div>
         </div>
       </div>
 
       <div className="grid gap-0 sm:grid-cols-3">
-        {steps.map((step, index) => (
+        {WELCOME_STEPS.map((step, index) => (
           <div
             key={step.number}
             className={`p-6 ${index > 0 ? "border-t sm:border-l sm:border-t-0" : ""} border-border/70`}
           >
             <p className="font-display text-2xl text-sand-500">{step.number}</p>
-            <h3 className="mt-2 text-base font-semibold">{step.title}</h3>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{step.description}</p>
+            <h3 className="mt-2 text-base font-semibold">{t(step.titleKey)}</h3>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t(step.bodyKey)}</p>
           </div>
         ))}
       </div>

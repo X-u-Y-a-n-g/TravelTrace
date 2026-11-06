@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 
 export function LogoMark({ className }: { className?: string }) {
   return (
@@ -29,6 +30,7 @@ export function LogoMark({ className }: { className?: string }) {
 }
 
 export function Logo({ className, markClassName }: { className?: string; markClassName?: string }) {
+  const { t } = useI18n();
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <LogoMark className={markClassName} />
@@ -37,7 +39,7 @@ export function Logo({ className, markClassName }: { className?: string; markCla
           TravelTrace
         </span>
         <span className="mt-0.5 text-[9px] uppercase tracking-[0.24em] text-muted-foreground">
-          Travel journal
+          {t("app.travelJournal")}
         </span>
       </span>
     </span>
